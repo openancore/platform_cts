@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Builds the cts tradefed host library
+###############################################################################
+# Builds the compatibility tradefed host library
+###############################################################################
 
 LOCAL_PATH := $(call my-dir)
 
@@ -22,37 +24,27 @@ LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
 #LOCAL_JAVA_RESOURCE_DIRS := res
 
-LOCAL_MODULE := cts-tradefed_v2
+LOCAL_MODULE := compatibility-tradefed_v2
 
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_JAVA_LIBRARIES := ddmlib-prebuilt tradefed-prebuilt hosttestlib cts-common-util-host_v2
+LOCAL_JAVA_LIBRARIES := ddmlib-prebuilt tradefed-prebuilt hosttestlib compatibility-common-util-hostsidelib_v2
 
 include $(BUILD_HOST_JAVA_LIBRARY)
 
 ###############################################################################
-# Builds the cts tradefed executable
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE_TAGS := optional
-
-LOCAL_PREBUILT_EXECUTABLES := cts-tradefed_v2
-
-include $(BUILD_HOST_PREBUILT)
-
+# Build the compatibility tradefed tests
 ###############################################################################
-# Builds the cts tradefed tests
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := $(call all-java-files-under, tests)
+LOCAL_SRC_FILES := $(call all-java-files-under, tests/src)
 
-LOCAL_MODULE := cts-tradefed-tests_v2
+LOCAL_MODULE := compatibility-tradefed-tests_v2
 
 LOCAL_MODULE_TAGS := optional
 
-LOCAL_JAVA_LIBRARIES := ddmlib-prebuilt tradefed-prebuilt cts-tradefed_v2
+LOCAL_JAVA_LIBRARIES := ddmlib-prebuilt tradefed-prebuilt compatibility-tradefed_v2 junit
 
 LOCAL_STATIC_JAVA_LIBRARIES := easymock
 
