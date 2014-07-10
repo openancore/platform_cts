@@ -56,11 +56,7 @@ public class BleAdvertiserPrivacyMacActivity extends PassFailButtons.Activity {
             .setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(BleAdvertiserPrivacyMacActivity.this,
-                                               BleAdvertiserService.class);
-                    intent.putExtra(BleAdvertiserService.EXTRA_COMMAND,
-                                    BleAdvertiserService.COMMAND_STOP_ADVERTISE);
-                    startService(intent);
+                    stopAdvertising();
                 }
             });
 
@@ -81,8 +77,22 @@ public class BleAdvertiserPrivacyMacActivity extends PassFailButtons.Activity {
         unregisterReceiver(onBroadcast);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopAdvertising();
+    }
+
     private void showMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    private void stopAdvertising() {
+        Intent intent = new Intent(BleAdvertiserPrivacyMacActivity.this,
+                                   BleAdvertiserService.class);
+        intent.putExtra(BleAdvertiserService.EXTRA_COMMAND,
+                        BleAdvertiserService.COMMAND_STOP_ADVERTISE);
+        startService(intent);
     }
 
     private BroadcastReceiver onBroadcast = new BroadcastReceiver() {
