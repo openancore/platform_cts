@@ -22,6 +22,7 @@
 #include <sys/errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 static jclass gFileStatusClass;
 static jfieldID gFileStatusDevFieldID;
@@ -122,8 +123,10 @@ static JNINativeMethod gMethods[] = {
 int register_android_os_cts_FileUtils(JNIEnv* env)
 {
     jclass clazz = env->FindClass("android/os/cts/FileUtils");
+    assert(clazz != null);
 
     gFileStatusClass = env->FindClass("android/os/cts/FileUtils$FileStatus");
+    assert(gFileStatusClass != null);
     gFileStatusDevFieldID = env->GetFieldID(gFileStatusClass, "dev", "I");
     gFileStatusInoFieldID = env->GetFieldID(gFileStatusClass, "ino", "I");
     gFileStatusModeFieldID = env->GetFieldID(gFileStatusClass, "mode", "I");
