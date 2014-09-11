@@ -16,106 +16,62 @@
 
 package com.android.cts.verifier.telecomm;
 
-import com.android.cts.verifier.PassFailButtons;
-import com.android.cts.verifier.R;
-
-import android.content.ComponentName;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
 import android.os.SystemClock;
 import android.telecomm.Connection;
 import android.telecomm.ConnectionRequest;
-import android.telecomm.ConnectionService;
-import android.telecomm.PhoneAccount;
 import android.telecomm.PhoneAccountHandle;
-import android.telecomm.TelecommManager;
-import android.view.View;
+
+import com.android.cts.verifier.R;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class CancelCallTestActivity extends PassFailButtons.Activity {
+/**
+ * Tests that a call can be canceled by a ConnectionService (and that the cancelation is respected).
+ * Once the ConnectionService returns a canceled connection, the test verifies that Telecomm does
+ * not have any active calls. If this is the case, the test will pass.
+ */
+public class CancelCallTestActivity extends TelecommBaseTestActivity {
     private static final Semaphore sLock = new Semaphore(0);
 
-    private PhoneAccountHandle mPhoneAccountHandle;
-
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setResult(RESULT_CANCELED);
-        setContentView(R.layout.telecomm_test_activity);
-        setPassFailButtonClickListeners();
-        setInfoResources(R.string.telecomm_cancel_call_title, R.string.telecomm_cancel_call_info, 0);
-
-        findViewById(R.id.open_settings).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPhoneAccountHandle = new PhoneAccountHandle(
-                        new ComponentName(CancelCallTestActivity.this,
-                                CancellingConnectionService.class),
-                        getClass().getSimpleName()
-                );
-                PhoneAccount account = new PhoneAccount.Builder(mPhoneAccountHandle,
-                                                                "Call Cancel Manager")
-                        .setCapabilities(PhoneAccount.CAPABILITY_CONNECTION_MANAGER)
-                        .build();
-
-                getTelecommManager().registerPhoneAccount(account);
-
-                Intent i = new Intent(Intent.ACTION_MAIN)
-                        .setClassName("com.android.telecomm",
-                                "com.android.telecomm.PhoneAccountPreferencesActivity");
-                startActivity(i);
-            }
-        });
-
-        findViewById(R.id.simulate_call).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new Thread() {
-                    @Override
-                    public void run() {
-                        super.run();
-
-                        Intent call = new Intent(Intent.ACTION_CALL);
-                        call.setData(Uri.parse("tel:5552637643"));
-                        startActivity(call);
-                        try {
-                            if (!sLock.tryAcquire(1000, TimeUnit.MILLISECONDS)) {
-                                setTestResultAndFinish(false);
-                                return;
-                            }
-
-                            // Wait for the listeners to be fired so the call is cleaned up.
-                            SystemClock.sleep(1000);
-
-                            // Make sure that there aren't any ongoing calls.
-                            setTestResultAndFinish(!getTelecommManager().isInCall());
-                        } catch (Exception e) {
-                            setTestResultAndFinish(false);
-                            return;
-                        }
-                    }
-                }.start();
-            }
-        });
-    }
-
-    private TelecommManager getTelecommManager() {
-        return (TelecommManager) getSystemService(TELECOMM_SERVICE);
+    protected int getTestTitleResource() {
+        return R.string.telecomm_cancel_call_title;
     }
 
     @Override
-    public void setTestResultAndFinish(boolean passed) {
-        super.setTestResultAndFinish(passed);
-        if (mPhoneAccountHandle != null) {
-            getTelecommManager().unregisterPhoneAccount(mPhoneAccountHandle);
+    protected int getTestInfoResource() {
+        return R.string.telecomm_cancel_call_info;
+    }
+
+    @Override
+    protected Class<? extends android.telecomm.ConnectionService> getConnectionService() {
+        return ConnectionService.class;
+    }
+
+    @Override
+    protected String getConnectionServiceLabel() {
+        return "Call Cancel Manager";
+    }
+
+    @Override
+    protected boolean onCallPlacedBackgroundThread() {
+        try {
+            if (!sLock.tryAcquire(1000, TimeUnit.MILLISECONDS)) {
+                return false;
+            }
+
+            // Wait for the listeners to be fired so the call is cleaned up.
+            SystemClock.sleep(1000);
+
+            // Make sure that there aren't any ongoing calls.
+            return !getTelecommManager().isInCall();
+        } catch (Exception e) {
+            return false;
         }
     }
 
-    public static class CancellingConnectionService extends ConnectionService {
+    public static class ConnectionService extends android.telecomm.ConnectionService {
         @Override
         public Connection onCreateOutgoingConnection(
                 PhoneAccountHandle connectionManagerPhoneAccount,
