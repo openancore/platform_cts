@@ -17,25 +17,8 @@
 package android.hardware.cts.helpers.sensoroperations;
 
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.cts.helpers.SensorCtsHelper;
-import android.hardware.cts.helpers.SensorStats;
-import android.hardware.cts.helpers.SensorTestInformation;
-import android.hardware.cts.helpers.TestSensorManager;
-import android.hardware.cts.helpers.ValidatingSensorEventListener;
-import android.hardware.cts.helpers.sensorverification.EventGapVerification;
-import android.hardware.cts.helpers.sensorverification.EventOrderingVerification;
-import android.hardware.cts.helpers.sensorverification.FrequencyVerification;
-import android.hardware.cts.helpers.sensorverification.ISensorVerification;
-import android.hardware.cts.helpers.sensorverification.JitterVerification;
-import android.hardware.cts.helpers.sensorverification.MagnitudeVerification;
-import android.hardware.cts.helpers.sensorverification.MeanVerification;
-import android.hardware.cts.helpers.sensorverification.StandardDeviationVerification;
+import android.hardware.cts.helpers.TestSensorEventListener;
 
-import junit.framework.Assert;
-
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,20 +29,10 @@ import java.util.concurrent.TimeUnit;
  * events and then run all the tests.
  * </p>
  */
-public class TestSensorOperation extends AbstractSensorOperation {
-    private final TestSensorManager mSensorManager;
-    private final Context mContext;
-    private final int mSensorType;
-    private final int mRateUs;
-    private final int mMaxBatchReportLatencyUs;
+public class TestSensorOperation extends VerifiableSensorOperation {
     private final Integer mEventCount;
     private final Long mDuration;
     private final TimeUnit mTimeUnit;
-
-    private final Collection<ISensorVerification> mVerifications =
-            new HashSet<ISensorVerification>();
-
-    private boolean mLogEvents = false;
 
     /**
      * Create a {@link TestSensorOperation}.
@@ -95,73 +68,21 @@ public class TestSensorOperation extends AbstractSensorOperation {
      */
     private TestSensorOperation(Context context, int sensorType, int rateUs,
             int maxBatchReportLatencyUs, Integer eventCount, Long duration, TimeUnit timeUnit) {
-        mContext = context;
-        mSensorType = sensorType;
-        mRateUs = rateUs;
-        mMaxBatchReportLatencyUs = maxBatchReportLatencyUs;
+        super(context, sensorType, rateUs, maxBatchReportLatencyUs);
         mEventCount = eventCount;
         mDuration = duration;
         mTimeUnit = timeUnit;
-        mSensorManager = new TestSensorManager(mContext, mSensorType, mRateUs,
-                mMaxBatchReportLatencyUs);
     }
 
     /**
-     * Set whether to log events.
-     */
-    public void setLogEvents(boolean logEvents) {
-        mLogEvents = logEvents;
-    }
-
-    /**
-     * Set all of the default test expectations.
-     */
-    public void setDefaultVerifications() {
-        Sensor sensor = mSensorManager.getSensor();
-        addVerification(EventGapVerification.getDefault(sensor, mRateUs));
-        addVerification(EventOrderingVerification.getDefault(sensor));
-        addVerification(FrequencyVerification.getDefault(sensor, mRateUs));
-        addVerification(JitterVerification.getDefault(sensor, mRateUs));
-        addVerification(MagnitudeVerification.getDefault(sensor));
-        addVerification(MeanVerification.getDefault(sensor));
-        // Skip SigNumVerification since it has no default
-        addVerification(StandardDeviationVerification.getDefault(sensor));
-    }
-
-    public void addVerification(ISensorVerification verification) {
-        if (verification != null) {
-            mVerifications.add(verification);
-        }
-    }
-
-    /**
-     * Collect the specified number of events from the sensor and run all enabled verifications.
+     * {@inheritDoc}
      */
     @Override
-    public void execute() {
-        getStats().addValue("sensor_name", SensorTestInformation.getSensorName(mSensorType));
-
-        ValidatingSensorEventListener listener = new ValidatingSensorEventListener(mVerifications);
-        listener.setLogEvents(mLogEvents);
-
+    protected void doExecute(TestSensorEventListener listener) {
         if (mEventCount != null) {
             mSensorManager.runSensor(listener, mEventCount);
         } else {
             mSensorManager.runSensor(listener, mDuration, mTimeUnit);
-        }
-
-        boolean failed = false;
-        StringBuilder sb = new StringBuilder();
-
-        for (ISensorVerification verification : mVerifications) {
-            failed |= evaluateResults(verification, sb);
-        }
-
-        if (failed) {
-            String msg = SensorCtsHelper.formatAssertionMessage(mSensorManager.getSensor(),
-                    "VerifySensorOperation", mRateUs, mMaxBatchReportLatencyUs, sb.toString());
-            getStats().addValue(SensorStats.ERROR, msg);
-            Assert.fail(msg);
         }
     }
 
@@ -169,35 +90,13 @@ public class TestSensorOperation extends AbstractSensorOperation {
      * {@inheritDoc}
      */
     @Override
-    public TestSensorOperation clone() {
-        TestSensorOperation operation;
+    protected VerifiableSensorOperation doClone() {
         if (mEventCount != null) {
-            operation = new TestSensorOperation(mContext, mSensorType, mRateUs,
+            return new TestSensorOperation(mContext, mSensorType, mRateUs,
                     mMaxBatchReportLatencyUs, mEventCount);
         } else {
-            operation = new TestSensorOperation(mContext, mSensorType, mRateUs,
+            return new TestSensorOperation(mContext, mSensorType, mRateUs,
                     mMaxBatchReportLatencyUs, mDuration, mTimeUnit);
         }
-
-        for (ISensorVerification verification : mVerifications) {
-            operation.addVerification(verification.clone());
-        }
-        return operation;
-    }
-
-    /**
-     * Evaluate the results of a test, aggregate the stats, and build the error message.
-     */
-    private boolean evaluateResults(ISensorVerification verification, StringBuilder sb) {
-        try {
-            verification.verify(getStats());
-        } catch (AssertionError e) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append(e.getMessage());
-            return true;
-        }
-        return false;
     }
 }
