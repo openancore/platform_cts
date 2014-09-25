@@ -26,8 +26,9 @@ LOCAL_JAVA_LIBRARIES := android.test.runner telephony-common voip-common
 LOCAL_STATIC_JAVA_LIBRARIES := ctsdeviceutil ctstestrunner ctstestserver
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-              src/android/app/cts/ISecondary.aidl
 
 LOCAL_PACKAGE_NAME := CtsAppTestCases
+
+LOCAL_INSTRUMENTATION_FOR := CtsAppTestStubs
 
 include $(BUILD_CTS_PACKAGE)
