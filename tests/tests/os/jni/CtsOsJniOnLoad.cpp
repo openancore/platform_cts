@@ -25,8 +25,6 @@ extern int register_android_os_cts_TaggedPointer(JNIEnv*);
 
 extern int register_android_os_cts_OSFeatures(JNIEnv*);
 
-extern int register_android_os_cts_FileUtils(JNIEnv*);
-
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = NULL;
 
@@ -48,10 +46,6 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     if (register_android_os_cts_OSFeatures(env)) {
         return JNI_ERR;
-    }
-
-    if (register_android_os_cts_FileUtils(env)) {
-      return JNI_ERR;
     }
 
     return JNI_VERSION_1_4;
