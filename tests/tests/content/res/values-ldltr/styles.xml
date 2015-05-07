@@ -18,4 +18,7 @@
     <style name="Theme_LayoutDirectionDependent">
         <item name="themeInteger">111</item>
     </style>
+    <style name="Theme_LayoutIsRTL">
+        <item name="themeBoolean">false</item>
+    </style>
 </resources>
