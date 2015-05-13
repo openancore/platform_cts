@@ -50,10 +50,27 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
     private static final String TAG = "HifiUltrasoundTestActivity";
 
     private Status status = Status.START;
+    private boolean onPlotScreen = false;
     private TextView info;
     private Button playerButton;
     private Button recorderButton;
     private AudioTrack audioTrack;
+    private LayoutInflater layoutInflater;
+    private View popupView;
+    private PopupWindow popupWindow;
+    private boolean micSupport = true;
+    private boolean spkrSupport = true;
+
+    @Override
+    public void onBackPressed () {
+        if (onPlotScreen) {
+            popupWindow.dismiss();
+            onPlotScreen = false;
+            recorderButton.setEnabled(true);
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,22 +80,49 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
         setPassFailButtonClickListeners();
         getPassButton().setEnabled(false);
 
-        Common.setSampleRate(AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC));
-
         info = (TextView) findViewById(R.id.info_text);
         info.setMovementMethod(new ScrollingMovementMethod());
         info.setText(R.string.hifi_ultrasound_test_instruction1);
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        String micSupportString = audioManager.getProperty(
+            getResources().getString(R.string.hifi_ultrasound_test_mic_prop));
+        String spkrSupportString = audioManager.getProperty(
+            getResources().getString(R.string.hifi_ultrasound_test_spkr_prop));
+
+        if (micSupportString == null) {
+          micSupportString = "null";
+        }
+        if (spkrSupportString == null) {
+          spkrSupportString = "null";
+        }
+        if (micSupportString.equalsIgnoreCase(getResources().getString(
+            R.string.hifi_ultrasound_test_default_false_string))) {
+          micSupport = false;
+          getPassButton().setEnabled(true);
+          info.append(getResources().getString(R.string.hifi_ultrasound_test_mic_no_support));
+        }
+        if (spkrSupportString.equalsIgnoreCase(getResources().getString(
+            R.string.hifi_ultrasound_test_default_false_string))) {
+          spkrSupport = false;
+          info.append(getResources().getString(R.string.hifi_ultrasound_test_spkr_no_support));
+        }
+
+        layoutInflater = (LayoutInflater) getBaseContext().getSystemService(
+            LAYOUT_INFLATER_SERVICE);
+        popupView = layoutInflater.inflate(R.layout.hifi_ultrasound_popup, null);
+        popupWindow = new PopupWindow(
+            popupView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 
         final AudioRecordHelper audioRecorder = AudioRecordHelper.getInstance();
         final int recordRate = audioRecorder.getSampleRate();
 
         recorderButton = (Button) findViewById(R.id.recorder_button);
+        recorderButton.setEnabled(micSupport);
         recorderButton.setOnClickListener(new View.OnClickListener() {
           private WavAnalyzerTask wavAnalyzerTask = null;
           private void stopRecording() {
             audioRecorder.stop();
-            playerButton.setText(R.string.hifi_ultrasound_test_playback);
-            playerButton.setEnabled(true);
             wavAnalyzerTask = new WavAnalyzerTask(audioRecorder.getByte());
             wavAnalyzerTask.execute();
             status = Status.DONE;
@@ -86,7 +130,6 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
           @Override
           public void onClick(View v) {
             switch (status) {
-
               case START:
                 info.append("Recording at " + recordRate + "Hz using ");
                 final int source = audioRecorder.getAudioSource();
@@ -111,12 +154,12 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
                 new Thread() {
                   @Override
                   public void run() {
-                    Double recordingDuration_millis = new Double(1000 * (2.5 +
-                        Common.PREFIX_LENGTH / Common.getSampleRate() +
-                        Common.PAUSE_BEFORE_PREFIX_DURATION_S +
-                        Common.PAUSE_AFTER_PREFIX_DURATION_S +
-                        Common.PIP_NUM * (Common.PIP_DURATION_S + Common.PAUSE_DURATION_S)
-                        * Common.REPETITIONS));
+                    Double recordingDuration_millis = new Double(1000 * (2.5
+                          + Common.PREFIX_LENGTH_S
+                          + Common.PAUSE_BEFORE_PREFIX_DURATION_S
+                          + Common.PAUSE_AFTER_PREFIX_DURATION_S
+                          + Common.PIP_NUM * (Common.PIP_DURATION_S + Common.PAUSE_DURATION_S)
+                          * Common.REPETITIONS));
                     Log.d(TAG, "Recording for " + recordingDuration_millis + "ms");
                     try {
                       Thread.sleep(recordingDuration_millis.intValue());
@@ -144,40 +187,29 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
         });
 
         playerButton = (Button) findViewById(R.id.player_button);
+        playerButton.setEnabled(spkrSupport);
         playerButton.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            switch (status) {
-              case START:
-                playerButton.setEnabled(false);
-                recorderButton.setEnabled(false);
-                status = Status.PLAYER;
-                play();
-                break;
-              default:
-                play(audioRecorder.getByte(), recordRate);
-                break;
-            }
+              recorderButton.setEnabled(false);
+              status = Status.PLAYER;
+              play();
           }
         });
     }
 
 
     private void plotResponse(WavAnalyzerTask wavAnalyzerTask) {
-      LayoutInflater layoutInflater
-          = (LayoutInflater) getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
-      View popupView = layoutInflater.inflate(R.layout.hifi_ultrasound_popup, null);
-      final PopupWindow popupWindow = new PopupWindow(
-          popupView, LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-
       Button dismissButton = (Button)popupView.findViewById(R.id.dismiss);
       dismissButton.setOnClickListener(new Button.OnClickListener(){
         @Override
         public void onClick(View v) {
           popupWindow.dismiss();
+          onPlotScreen = false;
           recorderButton.setEnabled(true);
         }});
       popupWindow.showAtLocation(info, Gravity.CENTER, 0, 0);
+      onPlotScreen = true;
 
       recorderButton.setEnabled(false);
 
@@ -256,7 +288,7 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
      * Plays the generated pips.
      */
     private void play() {
-      play(SoundGenerator.getInstance().getByte(), Common.getSampleRate());
+      play(SoundGenerator.getInstance().getByte(), Common.PLAYING_SAMPLE_RATE_HZ);
     }
 
     /**
@@ -286,7 +318,7 @@ public class HifiUltrasoundTestActivity extends PassFailButtons.Activity {
     WavAnalyzer wavAnalyzer;
 
     public WavAnalyzerTask(byte[] recording) {
-      wavAnalyzer = new WavAnalyzer(recording, AudioRecordHelper.getInstance().getSampleRate(),
+      wavAnalyzer = new WavAnalyzer(recording, Common.RECORDING_SAMPLE_RATE_HZ,
           WavAnalyzerTask.this);
     }
 
