@@ -20,7 +20,7 @@
     <option name="run-command:teardown-command" value="settings put global overlay_display_devices &quot;&quot;" />
     <option name="apk-installer:test-file-name" value="CtsDisplayTestCases.apk" />
     <test class="com.android.tradefed.testtype.InstrumentationTest" >
-        <option name="package" value="com.android.cts.display" />
+        <option name="package" value="android.display.cts" />
         <option name="runner" value="android.support.test.runner.AndroidJUnitRunner" />
     </test>
 </configuration>
