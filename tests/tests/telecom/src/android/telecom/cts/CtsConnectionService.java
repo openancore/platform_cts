@@ -20,11 +20,8 @@ import android.telecom.Conference;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
-import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
-import android.telecom.TelecomManager;
-
-import java.util.concurrent.Semaphore;
+import android.telecom.RemoteConnection;
 
 /**
  * This is the official ConnectionService for Telecom's CTS App. Since telecom requires that a
@@ -64,14 +61,14 @@ public class CtsConnectionService extends ConnectionService {
      */
     private static Object sLock = new Object();
 
-    public static PhoneAccount setUp(PhoneAccount phoneAccount, ConnectionService connectionService)
+    public static void setUp(PhoneAccountHandle phoneAccountHandle,
+            ConnectionService connectionService)
             throws Exception {
         synchronized(sLock) {
             if (sConnectionService != null) {
                 throw new Exception("Mock ConnectionService exists.  Failed to call tearDown().");
             }
             sConnectionService = connectionService;
-            return phoneAccount;
         }
     }
 
@@ -120,9 +117,38 @@ public class CtsConnectionService extends ConnectionService {
         }
     }
 
+    @Override
+    public void onRemoteExistingConnectionAdded(RemoteConnection connection) {
+        synchronized(sLock) {
+            if (sConnectionService != null) {
+                sConnectionService.onRemoteExistingConnectionAdded(connection);
+            } else {
+                mMockConnectionService.onRemoteExistingConnectionAdded(connection);
+            }
+        }
+    }
+
     public static void addConferenceToTelecom(Conference conference) {
         synchronized(sLock) {
             sTelecomConnectionService.addConference(conference);
+        }
+    }
+
+    public static RemoteConnection createRemoteOutgoingConnectionToTelecom(
+            PhoneAccountHandle connectionManagerPhoneAccount,
+            ConnectionRequest request) {
+        synchronized(sLock) {
+            return sTelecomConnectionService.createRemoteOutgoingConnection(
+                    connectionManagerPhoneAccount, request);
+        }
+    }
+
+    public static RemoteConnection createRemoteIncomingConnectionToTelecom(
+            PhoneAccountHandle connectionManagerPhoneAccount,
+            ConnectionRequest request) {
+        synchronized(sLock) {
+            return sTelecomConnectionService.createRemoteIncomingConnection(
+                    connectionManagerPhoneAccount, request);
         }
     }
 }
