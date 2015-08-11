@@ -38,6 +38,7 @@ public class DisableContextActivity extends Activity {
         super.onStart();
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(this, MainInteractionService.class));
+        finish();
         ComponentName serviceName = startService(intent);
         Log.i(TAG, "Started service: " + serviceName);
     }
