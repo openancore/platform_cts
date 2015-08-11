@@ -16,25 +16,10 @@
 
 package android.assist.cts;
 
-import android.assist.TestStartActivity;
 import android.assist.common.Utils;
 
-import android.app.assist.AssistContent;
-import android.app.assist.AssistStructure;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.cts.util.SystemUtil;
-import android.os.Bundle;
-import android.test.ActivityInstrumentationTestCase2;
-import android.util.Log;
+import android.provider.Settings;
 
-import java.lang.Exception;
-import java.lang.Override;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  *  Test that the AssistStructure returned is properly formatted.
@@ -57,22 +42,11 @@ public class AssistStructureTest extends AssistTestBase {
     }
 
     public void testAssistStructure() throws Exception {
-        // TODO(awlee): verify that the context/screenshot setting is on if appropriate
-        if (mAssistContent == null) {
-            fail("Received null assistBundle or assistContent.");
-            return;
-        }
-        if (mAssistBundle == null) {
-            fail("Received null assistBundle.");
-            return;
-        }
+        assertEquals("1", Settings.Secure.getString(
+            mContext.getContentResolver(), "assist_structure_enabled"));
 
-        if (mAssistStructure == null) {
-            fail("Received null assistStructure");
-            return;
-        } else {
-            verifyAssistStructure(Utils.getTestAppComponent(TEST_CASE_TYPE),
+        verifyAssistDataNullness(false, false, false, false);
+        verifyAssistStructure(Utils.getTestAppComponent(TEST_CASE_TYPE),
                     false /*FLAG_SECURE set*/);
-        }
     }
 }
