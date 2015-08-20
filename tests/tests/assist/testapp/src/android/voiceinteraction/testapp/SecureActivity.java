@@ -17,6 +17,7 @@
 package android.assist.testapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -24,7 +25,6 @@ import android.view.WindowManager;
 
 public class SecureActivity extends Activity {
     static final String TAG = "SecureActivity";
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,5 +32,12 @@ public class SecureActivity extends Activity {
         setContentView(R.layout.secure_app);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i(TAG, "Activity has resumed");     
+        sendBroadcast(new Intent("android.intent.action.flag_secure_hasResumed"));
     }
 }
