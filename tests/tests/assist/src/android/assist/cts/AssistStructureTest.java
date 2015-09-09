@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class AssistStructureTest extends AssistTestBase {
+    private static final String TAG = "AssistStructureTest";
     private static final String TEST_CASE_TYPE = Utils.ASSIST_STRUCTURE;
 
     private BroadcastReceiver mReceiver;
