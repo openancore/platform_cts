@@ -15,4 +15,6 @@
 -->
 <resources>
     <string name="welcome">Hello there!</string>
+     <string name="testAppTitle">Assist Structure Test Activity</string>
+     <string name="screenshotActivityTitle">Screenshot Test Activity</string>
 </resources>
