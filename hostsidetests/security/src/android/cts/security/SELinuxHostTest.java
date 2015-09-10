@@ -105,32 +105,4 @@ public class SELinuxHostTest extends DeviceTestCase {
         assertTrue("The following SELinux domains were found to be in permissive mode:\n"
                    + errorString, errorString.length() == 0);
     }
-
-    /**
-     * Checks the policy running on-device against a set of neverallow rules
-     *
-     * @throws Exception
-     */
-    public void testNeverallowRules() throws Exception {
-
-        File neverallowRules = copyResourceToTempFile("/general_sepolicy.conf");
-
-        /* run sepolicy-analyze neverallow check on policy file using given neverallow rules */
-        ProcessBuilder pb = new ProcessBuilder(sepolicyAnalyze.getAbsolutePath(),
-                    devicePolicyFile.getAbsolutePath(), "neverallow", "-f",
-                    neverallowRules.getAbsolutePath());
-        pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-        pb.redirectErrorStream(true);
-        Process p = pb.start();
-        p.waitFor();
-        BufferedReader result = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line;
-        StringBuilder errorString = new StringBuilder();
-        while ((line = result.readLine()) != null) {
-            errorString.append(line);
-            errorString.append("\n");
-        }
-        assertTrue("The following errors were encountered when validating the SELinux"
-                   + "neverallow rules:\n" + errorString, errorString.length() == 0);
-    }
 }
