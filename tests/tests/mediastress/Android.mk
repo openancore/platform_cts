@@ -28,6 +28,8 @@ LOCAL_MULTILIB := both
 
 LOCAL_STATIC_JAVA_LIBRARIES := ctstestrunner ctsdeviceutil
 
+LOCAL_HOST_SHARED_LIBRARIES := compatibility-device-media-preconditions
+
 LOCAL_JNI_SHARED_LIBRARIES := libctsmediastress_jni
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
