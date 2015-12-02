@@ -78,7 +78,7 @@ public class AudioFrequencyLineActivity extends PassFailButtons.Activity impleme
 
     private final int mBlockSizeSamples = 1024;
     private final int mSamplingRate = 48000;
-    private final int mSelectedRecordSource = MediaRecorder.AudioSource.VOICE_RECOGNITION;
+    private final int mSelectedRecordSource = MediaRecorder.AudioSource.UNPROCESSED;//VOICE_RECOGNITION;// UNPROCESSED;
     private final int mChannelConfig = AudioFormat.CHANNEL_IN_MONO;
     private final int mAudioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private volatile Thread mRecordThread;
@@ -601,11 +601,13 @@ public class AudioFrequencyLineActivity extends PassFailButtons.Activity impleme
             mRecorder = new AudioRecord(mSelectedRecordSource, mSamplingRate,
                     mChannelConfig, mAudioFormat, 2 * minRecordBuffSizeInBytes);
         } catch (IllegalArgumentException e) {
+            Log.v(TAG, "Error: " + e.toString());
             return false;
         }
         if (mRecorder.getState() != AudioRecord.STATE_INITIALIZED) {
             mRecorder.release();
             mRecorder = null;
+            Log.v(TAG, "Error: mRecorder not initialized");
             return false;
         }
         mRecorder.setRecordPositionUpdateListener(this);
