@@ -19,9 +19,4 @@ package android.server.app;
 import android.app.Activity;
 
 public class PipActivity extends Activity {
-    @Override
-    protected void onResume() {
-        super.onResume();
-        enterPictureInPictureMode();
-    }
 }
