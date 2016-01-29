@@ -17,5 +17,9 @@ package com.android.cts.deviceadmin;
 
 import android.app.admin.DeviceAdminReceiver;
 
+/**
+ * Active admin with no android:permission="android.permission.BIND_DEVICE_ADMIN".  It can still
+ * be activated if the target API level <= 23, but not >= 24.
+ */
 public class DeviceAdminReceiverWithNoProtection extends DeviceAdminReceiver {
 }
