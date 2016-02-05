@@ -16,18 +16,17 @@
 package com.android.cts.deviceadmin;
 
 import android.app.admin.DevicePolicyManager;
-import android.test.AndroidTestCase;
 
 /**
  * Remove myself as DO.
  */
-public class ClearDeviceOwnerTest extends AndroidTestCase {
+public class ClearDeviceOwnerTest extends BaseDeviceAdminTest {
 
     public void testRemoveActiveAdmin() throws Exception {
 
         final DevicePolicyManager dpm = getContext().getSystemService(DevicePolicyManager.class);
 
-        dpm.clearDeviceOwnerApp(DeviceAdminTest.ADMIN_PACKAGE);
-        assertFalse("Still device owner", dpm.isDeviceOwnerApp(DeviceAdminTest.ADMIN_PACKAGE));
+        dpm.clearDeviceOwnerApp(mPackageName);
+        assertFalse("Still device owner", dpm.isDeviceOwnerApp(mPackageName));
     }
 }

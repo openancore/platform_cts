@@ -12,23 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_PACKAGE_NAME := CtsDeviceAdminApp
-
-LOCAL_MODULE_TAGS := optional
-
-LOCAL_MODULE_PATH := $(TARGET_OUT_DATA_APPS)
-
-LOCAL_SRC_FILES := $(call all-java-files-under, src)
-
-LOCAL_STATIC_JAVA_LIBRARIES := ctstestrunner compatibility-device-util
-
-LOCAL_SDK_VERSION := current
-
-# tag this module as a cts_v2 test artifact
-LOCAL_COMPATIBILITY_SUITE := cts_v2
-
-include $(BUILD_CTS_PACKAGE)
+# Build the test APKs using their own makefiles
+include $(call all-makefiles-under,$(LOCAL_PATH))
