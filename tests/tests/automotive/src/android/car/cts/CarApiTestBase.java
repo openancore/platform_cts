@@ -50,7 +50,9 @@ public class CarApiTestBase extends AndroidTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         mCar.disconnect();
-    }    protected synchronized Car getCar() {
+    }
+
+    protected synchronized Car getCar() {
         return mCar;
     }
 
