@@ -14,45 +14,25 @@
 
 package android.accessibilityservice.cts;
 
-import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityService.GestureResultCallback;
 import android.accessibilityservice.GestureDescription;
 import android.os.Handler;
+import android.test.InstrumentationTestCase;
 import android.view.accessibility.AccessibilityEvent;
+
+import java.io.IOException;
 
 /**
  * A stub accessibility service to install for testing gesture dispatch
  */
-public class StubGestureAccessibilityService extends AccessibilityService {
-    public static Object sWaitObjectForConnecting = new Object();
-
-    public static StubGestureAccessibilityService sConnectedInstance;
-
-    @Override
-    public void onDestroy() {
-        sConnectedInstance = null;
-    }
-
-    @Override
-    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
-
-    }
-
-    @Override
-    public void onInterrupt() {
-
-    }
-
-    @Override
-    protected void onServiceConnected() {
-        synchronized (sWaitObjectForConnecting) {
-            sConnectedInstance = this;
-            sWaitObjectForConnecting.notifyAll();
-        }
-    }
+public class StubGestureAccessibilityService extends InstrumentedAccessibilityService {
 
     public boolean doDispatchGesture(GestureDescription description, GestureResultCallback callback,
             Handler handler) {
         return dispatchGesture(description, callback, handler);
+    }
+
+    public static StubGestureAccessibilityService enableSelf(InstrumentationTestCase test) {
+        return InstrumentedAccessibilityService.enableService(
+                test, StubGestureAccessibilityService.class);
     }
 }
