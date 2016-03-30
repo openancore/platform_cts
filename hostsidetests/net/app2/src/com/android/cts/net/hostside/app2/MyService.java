@@ -39,7 +39,7 @@ public class MyService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand: " + intent);
+        Log.d(TAG, "MyService.onStartCommand: " + intent);
         final Context context = getApplicationContext();
         final MyBroadcastReceiver myReceiver = new MyBroadcastReceiver(DYNAMIC_RECEIVER);
         context.registerReceiver(myReceiver, new IntentFilter(ACTION_RECEIVER_READY));
