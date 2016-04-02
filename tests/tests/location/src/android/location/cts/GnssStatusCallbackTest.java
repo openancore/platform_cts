@@ -17,9 +17,8 @@
 package android.location.cts;
 
 import android.location.GnssStatusCallback;
-import android.test.AndroidTestCase;
 
-public class GnssStatusCallbackTest extends AndroidTestCase {
+public class GnssStatusCallbackTest extends GnssTestCase {
     private static class MockCallback extends GnssStatusCallback {
     }
 
