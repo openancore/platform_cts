@@ -57,8 +57,8 @@ public class ReportLogDeviceInfoStore extends DeviceInfoStore {
         }
         mJsonFile.createNewFile();
         formatWriter = new BufferedWriter(new FileWriter(mJsonFile));
-        formatWriter.write(oldMetrics + "\"" + mStreamName + "\":", 0,
-            oldMetrics.length() + mStreamName.length() + 3);
+        formatWriter.write(oldMetrics + "\"" + mStreamName + "\":", 0, oldMetrics.length() +
+                mStreamName.length() + 3);
         formatWriter.flush();
         formatWriter.close();
         mJsonWriter = new JsonWriter(new FileWriter(mJsonFile, true));
