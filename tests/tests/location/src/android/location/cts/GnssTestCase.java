@@ -21,5 +21,18 @@ import android.test.AndroidTestCase;
  * Base Test Case class for all Gnss Tests.
  */
 public abstract class GnssTestCase extends AndroidTestCase {
-    protected GnssTestCase() {}
+
+    // This is used to mark cts tests as CtsVerifier tests.
+    private volatile boolean mCtsVerifierTest = false;
+
+    protected GnssTestCase() {
+    }
+
+    public void setTestAsCtsVerifierTest(boolean value) {
+        mCtsVerifierTest = value;
+    }
+
+    public boolean isCtsVerifierTest() {
+        return mCtsVerifierTest;
+    }
 }
