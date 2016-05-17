@@ -16,71 +16,10 @@
 
 package com.android.cts.net.hostside;
 
-//TODO: move this and BatterySaverModeTest's logic into a common superclass
-public class BatterySaverModeNonMeteredTest extends AbstractRestrictBackgroundNetworkTestCase {
+public class BatterySaverModeNonMeteredTest extends AbstractBatterySaverModeTestCase {
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
-        // Set initial state.
-        removePowerSaveModeWhitelist(TEST_APP2_PKG);
-        setPowerSaveMode(false);
-
-        registerBroadcastReceiver();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-
-        setPowerSaveMode(false);
-    }
-
-    public void testBackgroundNetworkAccess_enabled() throws Exception {
-        setPowerSaveMode(true);
-        assertBackgroundNetworkAccess(false);
-
-        assertsForegroundAlwaysHasNetworkAccess();
-        assertBackgroundNetworkAccess(false);
-
-        // Make sure foreground app doesn't lose access upon enabling it.
-        setPowerSaveMode(false);
-        launchActivity();
-        assertForegroundNetworkAccess();
-        setPowerSaveMode(true);
-        assertForegroundNetworkAccess();
-        finishActivity();
-        assertBackgroundNetworkAccess(false);
-
-        // Same for foreground service.
-        setPowerSaveMode(false);
-        startForegroundService();
-        assertForegroundNetworkAccess();
-        setPowerSaveMode(true);
-        assertForegroundNetworkAccess();
-        stopForegroundService();
-        assertBackgroundNetworkAccess(false);
-    }
-
-    public void testBackgroundNetworkAccess_whitelisted() throws Exception {
-        setPowerSaveMode(true);
-        assertBackgroundNetworkAccess(false);
-
-        addPowerSaveModeWhitelist(TEST_APP2_PKG);
-        assertBackgroundNetworkAccess(true);
-
-        removePowerSaveModeWhitelist(TEST_APP2_PKG);
-        assertBackgroundNetworkAccess(false);
-
-        assertsForegroundAlwaysHasNetworkAccess();
-        assertBackgroundNetworkAccess(false);
-    }
-
-    public void testBackgroundNetworkAccess_disabled() throws Exception {
-        assertBackgroundNetworkAccess(true);
-
-        assertsForegroundAlwaysHasNetworkAccess();
-        assertBackgroundNetworkAccess(true);
+    protected void setUpMeteredNetwork() throws Exception {
+        resetMeteredNetwork();
     }
 }
