@@ -18,4 +18,5 @@
     <!-- This will tell tradefed to install the test apk. -->
     <option name="cts-apk-installer:test-file-name" value="CtsDragAndDropSourceApp.apk" />
     <option name="cts-apk-installer:test-file-name" value="CtsDragAndDropTargetApp.apk" />
+    <option name="cts-apk-installer:test-file-name" value="CtsDragAndDropTargetAppSdk23.apk" />
 </configuration>
