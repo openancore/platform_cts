@@ -20,14 +20,11 @@ LOCAL_PACKAGE_NAME := CtsLibcoreTestCases
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
     apache-harmony-tests \
-    bouncycastle-nojarjar \
     conscrypt-tests \
     core-tests \
     cts-core-test-runner \
     jsr166-tests \
     mockito-target \
-    okhttp-nojarjar \
-    okhttp-tests-nojarjar \
     tzdata_update-tests
 
 # Don't include this package in any target
