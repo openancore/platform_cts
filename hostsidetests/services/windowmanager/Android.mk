@@ -23,7 +23,7 @@ LOCAL_MODULE := CtsDragAndDropHostTestCases
 
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
-LOCAL_JAVA_LIBRARIES := cts-tradefed tradefed-prebuilt
+LOCAL_JAVA_LIBRARIES := cts-tradefed tradefed-prebuilt CtsServicesHostTestCases
 
 LOCAL_CTS_TEST_PACKAGE := android.wm.cts
 
