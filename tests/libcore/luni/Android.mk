@@ -23,7 +23,6 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     conscrypt-tests \
     core-tests \
     cts-core-test-runner \
-    jsr166-tests \
     mockito-target-minus-junit4 \
     tzdata_update-tests
 
