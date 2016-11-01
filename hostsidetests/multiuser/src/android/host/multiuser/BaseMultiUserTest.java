@@ -86,6 +86,29 @@ public class BaseMultiUserTest extends DeviceTestCase implements IBuildReceiver 
         throw new IllegalStateException();
     }
 
+    /**
+     * @return the userid of the created user
+     */
+    protected int createUser()
+            throws DeviceNotAvailableException, IllegalStateException {
+        final String command = "pm create-user "
+                + "TestUser_" + System.currentTimeMillis();
+        CLog.d("Starting command: " + command);
+        final String output = getDevice().executeShellCommand(command);
+        CLog.d("Output for command " + command + ": " + output);
+
+        if (output.startsWith("Success")) {
+            try {
+                return Integer.parseInt(output.substring(output.lastIndexOf(" ")).trim());
+            } catch (NumberFormatException e) {
+                CLog.e("Failed to parse result: %s", output);
+            }
+        } else {
+            CLog.e("Failed to create user: %s", output);
+        }
+        throw new IllegalStateException();
+    }
+
     private void removeTestUsers() throws Exception {
         for (int userId : getDevice().listUsers()) {
             if (!mFixedUsers.contains(userId)) {
