@@ -77,6 +77,7 @@ public class NotificationListenerVerifierActivity extends InteractiveVerifierAct
         tests.add(new NotificationRecievedTest());
         tests.add(new DataIntactTest());
         tests.add(new DismissOneTest());
+        tests.add(new DismissOneWithReasonTest());
         tests.add(new DismissAllTest());
         tests.add(new IsDisabledTest());
         tests.add(new ServiceStoppedTest());
@@ -304,6 +305,65 @@ public class NotificationListenerVerifierActivity extends InteractiveVerifierAct
         void tearDown() {
             mNm.cancelAll();
             MockListener.resetListenerData(mContext);
+            delay();
+        }
+    }
+
+    private class DismissOneWithReasonTest extends InteractiveTestCase {
+        @Override
+        View inflate(ViewGroup parent) {
+            return createAutoItem(parent, R.string.nls_clear_one_reason);
+        }
+
+        @Override
+        void setUp() {
+            sendNotifications();
+            status = READY;
+            delay();
+        }
+
+        @Override
+        void test() {
+            if (status == READY) {
+                MockListener.clearOne(mContext, mTag1, mId1);
+                status = RETEST;
+            } else {
+                MockListener.probeListenerRemovedWithReason(mContext,
+                        new StringListResultCatcher() {
+                            @Override
+                            public void accept(List<String> result) {
+                                if (result == null || result.size() == 0) {
+                                    status = FAIL;
+                                    return;
+                                }
+                                boolean pass = true;
+                                for (String payloadData : result) {
+                                    JSONObject payload = null;
+                                    try {
+                                        payload = new JSONObject(payloadData);
+                                        pass &= checkEquals(mTag1,
+                                                payload.getString(JSON_TAG),
+                                                "data dismissal test: notification tag (%s, %s)");
+                                        pass &= checkEquals(REASON_LISTENER_CANCEL,
+                                                payload.getInt(JSON_TAG),
+                                                "data dismissal test: reason (%d, %d)");
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
+                                status = pass ? PASS : FAIL;
+                                next();
+                            }
+                        });
+            }
+            delay();
+        }
+
+        @Override
+        void tearDown() {
+            mNm.cancelAll();
+            MockAssistant.resetListenerData(mContext);
             delay();
         }
     }

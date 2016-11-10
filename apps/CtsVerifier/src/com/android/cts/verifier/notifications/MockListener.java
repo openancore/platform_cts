@@ -43,6 +43,7 @@ public class MockListener extends NotificationListenerService {
     static final String SERVICE_POSTED = SERVICE_BASE + "SERVICE_POSTED";
     static final String SERVICE_PAYLOADS = SERVICE_BASE + "SERVICE_PAYLOADS";
     static final String SERVICE_REMOVED = SERVICE_BASE + "SERVICE_REMOVED";
+    static final String SERVICE_REMOVED_REASON = SERVICE_BASE + "SERVICE_REMOVED";
     static final String SERVICE_RESET = SERVICE_BASE + "SERVICE_RESET";
     static final String SERVICE_CLEAR_ONE = SERVICE_BASE + "SERVICE_CLEAR_ONE";
     static final String SERVICE_CLEAR_ALL = SERVICE_BASE + "SERVICE_CLEAR_ALL";
@@ -54,7 +55,6 @@ public class MockListener extends NotificationListenerService {
     static final String EXTRA_TAG = "TAG";
     static final String EXTRA_CODE = "CODE";
 
-    static final int RESULT_TIMEOUT = Activity.RESULT_FIRST_USER;
     static final int RESULT_NO_SERVER = Activity.RESULT_FIRST_USER + 1;
 
     public static final String JSON_FLAGS = "flag";
@@ -66,11 +66,13 @@ public class MockListener extends NotificationListenerService {
     public static final String JSON_RANK = "rank";
     public static final String JSON_AMBIENT = "ambient";
     public static final String JSON_MATCHES_ZEN_FILTER = "matches_zen_filter";
+    public static final String JSON_REASON = "reason";
 
     private ArrayList<String> mPosted = new ArrayList<String>();
     private ArrayMap<String, JSONObject> mNotifications = new ArrayMap<>();
     private ArrayMap<String, String> mNotificationKeys = new ArrayMap<>();
     private ArrayList<String> mRemoved = new ArrayList<String>();
+    private ArrayMap<String, JSONObject> mRemovedReason = new ArrayMap<>();
     private ArrayList<String> mOrder = new ArrayList<>();
     private Set<String> mTestPackages = new HashSet<>();
     private BroadcastReceiver mReceiver;
@@ -128,6 +130,16 @@ public class MockListener extends NotificationListenerService {
                     bundle.putStringArrayList(EXTRA_PAYLOAD, mRemoved);
                     setResultExtras(bundle);
                     setResultCode(Activity.RESULT_OK);
+                } else if (SERVICE_REMOVED_REASON.equals(action)) {
+                    Log.d(TAG, "SERVICE_REMOVED_REASON");
+                    Bundle bundle = new Bundle();
+                    ArrayList<String> payloadData = new ArrayList<>(mRemovedReason.size());
+                    for (JSONObject payload: mRemovedReason.values()) {
+                        payloadData.add(payload.toString());
+                    }
+                    bundle.putStringArrayList(EXTRA_PAYLOAD, payloadData);
+                    setResultExtras(bundle);
+                    setResultCode(Activity.RESULT_OK);
                 } else if (SERVICE_CLEAR_ONE.equals(action)) {
                     Log.d(TAG, "SERVICE_CLEAR_ONE");
                     String tag = intent.getStringExtra(EXTRA_TAG);
@@ -156,6 +168,7 @@ public class MockListener extends NotificationListenerService {
         filter.addAction(SERVICE_ORDER);
         filter.addAction(SERVICE_PAYLOADS);
         filter.addAction(SERVICE_REMOVED);
+        filter.addAction(SERVICE_REMOVED_REASON);
         filter.addAction(SERVICE_CLEAR_ONE);
         filter.addAction(SERVICE_CLEAR_ALL);
         filter.addAction(SERVICE_RESET);
@@ -243,6 +256,24 @@ public class MockListener extends NotificationListenerService {
         onNotificationRankingUpdate(rankingMap);
     }
 
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap,
+            int reason) {
+        Log.d(TAG, "removed: " + sbn.getTag());
+        mRemoved.add(sbn.getTag());
+        JSONObject removed = new JSONObject();
+        try {
+            removed.put(JSON_TAG, sbn.getTag());
+            removed.put(JSON_REASON, reason);
+        } catch (JSONException e) {
+            Log.e(TAG, "failed to pack up notification payload", e);
+        }
+        mNotifications.remove(sbn.getKey());
+        mNotificationKeys.remove(sbn.getTag());
+        mRemovedReason.put(sbn.getTag(), removed);
+        onNotificationRankingUpdate(rankingMap);
+    }
+
     public static void resetListenerData(Context context) {
         sendCommand(context, SERVICE_RESET, null, 0);
     }
@@ -269,6 +300,11 @@ public class MockListener extends NotificationListenerService {
 
     public static void probeListenerRemoved(Context context, StringListResultCatcher catcher) {
         requestStringListResult(context, SERVICE_REMOVED, catcher);
+    }
+
+    public static void probeListenerRemovedWithReason(Context context,
+            StringListResultCatcher catcher) {
+        requestStringListResult(context, SERVICE_REMOVED_REASON, catcher);
     }
 
     public static void clearOne(Context context, String tag, int code) {
