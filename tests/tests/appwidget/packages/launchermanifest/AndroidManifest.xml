@@ -26,10 +26,5 @@
                 <category android:name="android.intent.category.HOME" />
             </intent-filter>
         </activity>
-        <activity android:name="AppWidgetConfirmPin">
-            <intent-filter>
-                <action android:name="android.content.pm.action.CONFIRM_PIN_ITEM" />
-            </intent-filter>
-        </activity>
     </application>
 </manifest>
