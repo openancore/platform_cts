@@ -16,6 +16,7 @@
 
 package com.android.compatibility.common.util;
 
+import android.os.Build;
 import android.os.SystemProperties;
 
 /**
@@ -30,17 +31,29 @@ public class PropertyUtil {
      */
     public static String FIRST_API_LEVEL = "ro.product.first_api_level";
 
-    /** Value to be returned by SystemProperties.getInt() if property is not found */
+    /** Value to be returned by getPropertyInt() if property is not found */
     public static int INT_VALUE_IF_UNSET = -1;
 
     /** Returns whether the device build is the factory ROM */
     public static boolean isFactoryROM() {
         // property should be undefined if and only if the product is factory ROM.
-        return getFirstApiLevel() == INT_VALUE_IF_UNSET;
+        return getPropertyInt(FIRST_API_LEVEL) == INT_VALUE_IF_UNSET;
     }
 
-    /** Return value of read-only property "ro.product.first_api_level" */
+    /**
+     * Return the first API level for this product. If the read-only property is unset,
+     * this means the first API level is the current API level, and the current API level
+     * is returned.
+     */
     public static int getFirstApiLevel() {
-        return SystemProperties.getInt(FIRST_API_LEVEL, INT_VALUE_IF_UNSET);
+        int firstApiLevel = getPropertyInt(FIRST_API_LEVEL);
+        return (firstApiLevel == INT_VALUE_IF_UNSET) ? Build.VERSION.SDK_INT : firstApiLevel;
+    }
+
+    /**
+     * Retrieves the desired integer property, returning INT_VALUE_IF_UNSET if not found.
+     */
+    public static int getPropertyInt(String property) {
+        return SystemProperties.getInt(property, INT_VALUE_IF_UNSET);
     }
 }
