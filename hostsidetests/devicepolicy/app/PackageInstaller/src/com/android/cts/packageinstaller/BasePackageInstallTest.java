@@ -26,7 +26,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
-import android.os.Process;
 import android.support.test.uiautomator.UiDevice;
 import android.test.InstrumentationTestCase;
 
@@ -47,7 +46,7 @@ public class BasePackageInstallTest extends InstrumentationTestCase {
     private static final String ACTION_INSTALL_COMMIT =
             "com.android.cts.deviceowner.INTENT_PACKAGE_INSTALL_COMMIT";
     protected static final int PACKAGE_INSTALLER_STATUS_UNDEFINED = -1000;
-    public static final String PACKAGE_NAME = SilentPackageInstallTest.class.getPackage().getName();
+    public static final String PACKAGE_NAME = BasePackageInstallTest.class.getPackage().getName();
 
     protected Context mContext;
     protected UiDevice mDevice;
@@ -134,23 +133,6 @@ public class BasePackageInstallTest extends InstrumentationTestCase {
         assertTrue(isPackageInstalled(TEST_APP_PKG));
     }
 
-    protected boolean tryUninstallPackage() throws Exception {
-        assertTrue(isPackageInstalled(TEST_APP_PKG));
-        synchronized (mPackageInstallerTimeoutLock) {
-            mCallbackReceived = false;
-            mCallbackStatus = PACKAGE_INSTALLER_STATUS_UNDEFINED;
-        }
-        mPackageInstaller.uninstall(TEST_APP_PKG, getCommitCallback(0));
-        synchronized (mPackageInstallerTimeoutLock) {
-            try {
-                mPackageInstallerTimeoutLock.wait(PACKAGE_INSTALLER_TIMEOUT_MS);
-            } catch (InterruptedException e) {
-            }
-            assertTrue(mCallbackReceived);
-            return mCallbackStatus == PackageInstaller.STATUS_SUCCESS;
-        }
-    }
-
     protected void installPackage(String packageLocation) throws Exception {
         PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
                 PackageInstaller.SessionParams.MODE_FULL_INSTALL);
@@ -195,9 +177,5 @@ public class BasePackageInstallTest extends InstrumentationTestCase {
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
-    }
-
-    protected int getInstallReason(String packageName) {
-        return mPackageManager.getInstallReason(packageName, Process.myUserHandle());
     }
 }
