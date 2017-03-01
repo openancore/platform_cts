@@ -16,51 +16,15 @@
 
 package android.autofillservice.cts;
 
-import static android.autofillservice.cts.Helper.FILL_TIMEOUT_MS;
-
-import static com.google.common.truth.Truth.assertWithMessage;
-
-import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Custom {@link TextWatcher} used to assert a {@link EditText} was auto-filled properly.
  */
-final class OneTimeTextWatcher implements TextWatcher {
-    private final String name;
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private final EditText editText;
-    private final CharSequence expected;
+final class OneTimeTextWatcher extends MultipleTimesTextWatcher {
 
     OneTimeTextWatcher(String name, EditText editText, CharSequence expectedAutoFillValue) {
-        this.name = name;
-        this.editText = editText;
-        this.expected = expectedAutoFillValue;
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-        latch.countDown();
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-    }
-
-    void assertAutoFilled() throws Exception {
-        final boolean set = latch.await(FILL_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        assertWithMessage("Timeout (%s ms) on EditText %s", FILL_TIMEOUT_MS, name)
-                .that(set).isTrue();
-        final String actual = editText.getText().toString();
-        assertWithMessage("Wrong auto-fill value on EditText %s", name)
-                .that(actual).isEqualTo(expected.toString());
+        super(name, 1, editText, expectedAutoFillValue);
     }
 }
