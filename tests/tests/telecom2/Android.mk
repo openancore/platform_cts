@@ -27,6 +27,8 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_DATA_APPS)
 LOCAL_STATIC_JAVA_LIBRARIES := ctstestrunner
 
 src_dirs := src \
+    ../telecom/src/android/telecom/cts/SelfManagedConnection.java \
+    ../telecom/src/android/telecom/cts/CtsSelfManagedConnectionService.java \
     ../telecom/src/android/telecom/cts/TestUtils.java
 
 res_dirs := res \
