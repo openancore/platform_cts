@@ -25,8 +25,6 @@ LOCAL_DEX_PREOPT := false
 
 LOCAL_PROGUARD_ENABLED := disabled
 
-LOCAL_STATIC_JAVA_LIBRARIES := android-support-test ub-uiautomator
-
 LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
 # tag this module as a cts test artifact

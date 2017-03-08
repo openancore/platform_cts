@@ -19,7 +19,6 @@
     package="android.backup.cts.app">
 
     <application>
-        <uses-library android:name="android.test.runner" />
 
         <service
                 android:name="android.backup.cts.app.DummyLiveWallpaper"
@@ -35,9 +34,5 @@
         </service>
 
     </application>
-
-    <instrumentation
-        android:name="android.support.test.runner.AndroidJUnitRunner"
-        android:targetPackage="android.backup.cts.app" />
 
 </manifest>
