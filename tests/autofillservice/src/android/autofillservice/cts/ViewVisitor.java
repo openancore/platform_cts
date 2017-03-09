@@ -15,8 +15,6 @@
  */
 package android.autofillservice.cts;
 
-import android.view.View;
-
 /**
  * Visitor for a view.
  *
@@ -30,7 +28,7 @@ import android.view.View;
  * }
  * </code></pre>
  */
-interface ViewVisitor<T extends View> {
+interface ViewVisitor<T>{
 
     void visit(T view);
 }
