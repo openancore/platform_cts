@@ -21,6 +21,8 @@ LOCAL_MODULE_TAGS := optional
 # and when built explicitly put it in the data partition
 LOCAL_MODULE_PATH := $(TARGET_OUT_DATA_APPS)
 
+LOCAL_JNI_SHARED_LIBRARIES := libnativecursorwindow_jni
+
 LOCAL_JAVA_LIBRARIES := android.test.runner services
 
 LOCAL_STATIC_JAVA_LIBRARIES := ctstestrunner
@@ -32,3 +34,5 @@ LOCAL_PACKAGE_NAME := CtsContentTestCases
 LOCAL_INSTRUMENTATION_FOR := CtsTestStubs
 
 include $(BUILD_CTS_PACKAGE)
+
+include $(call all-makefiles-under,$(LOCAL_PATH))
