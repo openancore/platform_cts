@@ -16,11 +16,9 @@
 
 package com.android.cts.verifier.telecom;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.telecom.DisconnectCause;
 import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
@@ -121,11 +119,15 @@ public class OutgoingCallTestActivity extends PassFailButtons.Activity {
             } else {
                 mStep3Status.setImageResource(R.drawable.fs_error);
             }
+            PhoneAccountUtils.unRegisterTestPhoneAccount(this);
         });
 
         mStep1Status = view.findViewById(R.id.step_1_status);
         mStep2Status = view.findViewById(R.id.step_2_status);
         mStep3Status = view.findViewById(R.id.step_3_status);
+        mStep1Status.setImageResource(R.drawable.fs_indeterminate);
+        mStep2Status.setImageResource(R.drawable.fs_indeterminate);
+        mStep3Status.setImageResource(R.drawable.fs_indeterminate);
     }
 
     private boolean confirmOutgoingCall() {
