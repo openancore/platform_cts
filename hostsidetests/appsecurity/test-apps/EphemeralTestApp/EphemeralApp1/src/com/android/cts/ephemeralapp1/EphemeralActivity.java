@@ -18,29 +18,28 @@ package com.android.cts.ephemeralapp1;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.android.cts.util.TestResult;
+
 import java.util.List;
 
 public class EphemeralActivity extends Activity {
-    private static final String ACTION_START_ACTIVITY =
-            "com.android.cts.ephemeraltest.START_ACTIVITY";
-    private static final String EXTRA_ACTIVITY_NAME =
-            "com.android.cts.ephemeraltest.EXTRA_ACTIVITY_NAME";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final Intent broadcastIntent = new Intent(ACTION_START_ACTIVITY);
-        broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-        broadcastIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, "com.android.cts.ephemeralapp1");
-        broadcastIntent.putExtra(EXTRA_ACTIVITY_NAME, "EphemeralActivity");
-        sendBroadcast(broadcastIntent);
-
+        TestResult.getBuilder()
+                .setPackageName("com.android.cts.ephemeralapp1")
+                .setComponentName("EphemeralActivity")
+                .setStatus("PASS")
+                .build()
+                .broadcast(this);
         finish();
     }
 }
