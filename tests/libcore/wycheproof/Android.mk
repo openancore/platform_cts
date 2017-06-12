@@ -16,15 +16,13 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_PACKAGE_NAME := CtsLibcoreWycheproofTestCases
+LOCAL_PACKAGE_NAME := CtsLibcoreWycheproofConscryptTestCases
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
     cts-core-test-runner \
     wycheproof
 
-LOCAL_JAVA_LIBRARIES := \
-    bouncycastle \
-    conscrypt
+LOCAL_JAVA_LIBRARIES := conscrypt
 
 # Don't include this package in any target
 LOCAL_MODULE_TAGS := tests
