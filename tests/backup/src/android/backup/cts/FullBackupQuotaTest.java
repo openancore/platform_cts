@@ -24,6 +24,8 @@ package android.backup.cts;
  */
 public class FullBackupQuotaTest extends BaseBackupCtsTest {
 
+    private static final String BACKUP_APP_NAME = "android.backup.app";
+
     // Should be the same as LocalTransport.FULL_BACKUP_SIZE_QUOTA
     private static final int LOCAL_TRANSPORT_BACKUP_QUOTA = 25 * 1024 * 1024;
     private static final int LOCAL_TRANSPORT_EXCEEDING_FILE_SIZE = 30 * 1024 * 1024;
@@ -35,7 +37,7 @@ public class FullBackupQuotaTest extends BaseBackupCtsTest {
         exec("logcat --clear");
         exec("setprop log.tag." + APP_LOG_TAG +" VERBOSE");
         // Launch test app and create file exceeding limit for local transport
-        createTestFileOfSize(LOCAL_TRANSPORT_EXCEEDING_FILE_SIZE);
+        createTestFileOfSize(BACKUP_APP_NAME, LOCAL_TRANSPORT_EXCEEDING_FILE_SIZE);
 
         // Request backup and wait for quota exceeded event in logcat
         exec("bmgr backupnow " + BACKUP_APP_NAME);

@@ -21,6 +21,8 @@ package android.backup.cts;
  */
 public class FullBackupLifecycleTest extends BaseBackupCtsTest {
 
+    private static final String BACKUP_APP_NAME = "android.backup.app";
+
     private static final int LOCAL_TRANSPORT_CONFORMING_FILE_SIZE = 5 * 1024;
 
     public void testExpectedMethodsCalledInOrder() throws Exception {
@@ -31,7 +33,7 @@ public class FullBackupLifecycleTest extends BaseBackupCtsTest {
         exec("setprop log.tag." + APP_LOG_TAG +" VERBOSE");
 
         // Make sure there's something to backup
-        createTestFileOfSize(LOCAL_TRANSPORT_CONFORMING_FILE_SIZE);
+        createTestFileOfSize(BACKUP_APP_NAME, LOCAL_TRANSPORT_CONFORMING_FILE_SIZE);
 
         // Request backup and wait for it to complete
         exec("bmgr backupnow " + BACKUP_APP_NAME);
