@@ -28,6 +28,8 @@ LOCAL_PACKAGE_NAME := CtsInstantCookieApp
 
 LOCAL_COMPATIBILITY_SUITE := cts vts general-tests
 
+LOCAL_CERTIFICATE := cts/hostsidetests/appsecurity/certs/keysets/cts-keyset-test-a
+
 LOCAL_PROGUARD_ENABLED := disabled
 
 LOCAL_DEX_PREOPT := false
