@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2017 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,15 @@
  * limitations under the License.
  */
 
-package android.view.cts;
+package com.android.test.cantsavestate2;
 
 import android.app.Activity;
+import android.os.Bundle;
 
-import java.util.concurrent.CountDownLatch;
-
-public class PanicPressBackActivity extends Activity {
-
-    private boolean mWasPaused;
-
-    public final CountDownLatch mWaitForPanicBackLatch = new CountDownLatch(1);
-
+public class CantSave2Activity extends Activity {
     @Override
-    public void onBackPressed() {
-        // Prevent back press from exiting app
-    }
-
-    @Override
-    public void onPause() {
-        mWaitForPanicBackLatch.countDown();
-        super.onPause();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.cant_save_2_activity);
     }
 }
