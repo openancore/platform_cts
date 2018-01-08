@@ -24,13 +24,10 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     android-support-test \
     ctstestrunner \
     ub-uiautomator \
-    compatibility-device-util
+    compatibility-device-util \
+    accountaccesslib
 
-LOCAL_SRC_FILES := $(call all-java-files-under, src) \
-  ../CtsSyncAccountAccessSameCertTests/src/com/android/cts/content/StubActivity.java \
-  ../CtsSyncAccountAccessSameCertTests/src/com/android/cts/content/SyncAdapter.java \
-  ../CtsSyncAccountAccessSameCertTests/src/com/android/cts/content/SyncService.java \
-  ../CtsSyncAccountAccessSameCertTests/src/com/android/cts/content/FlakyTestRule.java
+LOCAL_SRC_FILES := $(call all-java-files-under, src)
 
 LOCAL_PACKAGE_NAME := CtsSyncAccountAccessOtherCertTestCases
 
