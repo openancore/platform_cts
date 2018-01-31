@@ -84,6 +84,7 @@ public class BatterySaverTests {
         updateAlarmManagerConstants();
         setBatteryCharging(false);
         setBatterySaverMode(true);
+        setAppStandbyBucket("active");
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(TestAlarmReceiver.ACTION_REPORT_ALARM_EXPIRED);
         mContext.registerReceiver(mAlarmStateReceiver, intentFilter);
@@ -140,6 +141,10 @@ public class BatterySaverTests {
 
     private void deleteAlarmManagerConstants() throws IOException {
         executeAndLog("settings delete global alarm_manager_constants");
+    }
+
+    private void setAppStandbyBucket(String bucket) throws IOException {
+        executeAndLog("am set-standby-bucket " + TEST_APP_PACKAGE + " " + bucket);
     }
 
     private void setBatteryCharging(final boolean charging) throws Exception {
