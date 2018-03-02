@@ -15,6 +15,8 @@
  */
 package com.android.compatibility.common.util;
 
+import android.util.Log;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -23,6 +25,15 @@ import org.junit.runners.model.Statement;
  * Custom JUnit4 rule that provides a callback upon test failures.
  */
 public abstract class OnFailureRule implements TestRule {
+    private String mLogTag = "OnFailureRule";
+
+    public OnFailureRule() {
+    }
+
+    public OnFailureRule(String logTag) {
+        mLogTag = logTag;
+    }
+
     @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {
@@ -32,6 +43,7 @@ public abstract class OnFailureRule implements TestRule {
                 try {
                     base.evaluate();
                 } catch (Throwable t) {
+                    Log.e(mLogTag, "Test failed: description=" +  description + "\nThrowable=" + t);
                     onTestFailure(base, description, t);
                     throw t;
                 }
