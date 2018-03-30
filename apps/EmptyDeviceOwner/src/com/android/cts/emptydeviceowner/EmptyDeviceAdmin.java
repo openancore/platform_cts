@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2018 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.cts.emptydeviceowner;
 
-package android.content.cts;
+import android.app.admin.DeviceAdminReceiver;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
-// Need the following import to get access to the app resources, since this
-// class is in a sub-package.
-import android.app.Activity;
-import android.os.Bundle;
+public class EmptyDeviceAdmin extends DeviceAdminReceiver {
 
-import android.content.cts.R;
-
-public class ContextWrapperCtsActivity extends Activity {
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.local_sample);
-    }
+	public static ComponentName getComponentName(Context context) {
+		return new ComponentName(context, EmptyDeviceAdmin.class);
+	}
 }
-
