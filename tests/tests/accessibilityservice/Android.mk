@@ -27,3 +27,5 @@ LOCAL_PACKAGE_NAME := CtsAccessibilityServiceTestCases
 LOCAL_SDK_VERSION := current
 
 include $(BUILD_CTS_PACKAGE)
+
+include $(call all-makefiles-under,$(LOCAL_PATH))
