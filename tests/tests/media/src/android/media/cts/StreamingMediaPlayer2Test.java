@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.platform.test.annotations.AppModeFull;
 import android.test.InstrumentationTestRunner;
 import android.util.Log;
 import android.webkit.cts.CtsTestServer;
@@ -42,6 +43,7 @@ import java.util.List;
 /**
  * Tests of MediaPlayer2 streaming capabilities.
  */
+@AppModeFull(reason = "TODO: evaluate and port to instant")
 public class StreamingMediaPlayer2Test extends MediaPlayer2TestBase {
     // TODO: remove this flag to enable tests.
     private static final boolean IGNORE_TESTS = true;
