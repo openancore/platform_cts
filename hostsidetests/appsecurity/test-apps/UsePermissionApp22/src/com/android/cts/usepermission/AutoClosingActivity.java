@@ -24,6 +24,7 @@ public class AutoClosingActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setResult(RESULT_OK);
         finish();
     }
 }
