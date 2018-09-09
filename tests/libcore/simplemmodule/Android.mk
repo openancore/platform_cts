@@ -21,7 +21,8 @@ LOCAL_PRIVATE_PLATFORM_APIS := true
 
 LOCAL_STATIC_JAVA_LIBRARIES := \
     cts-core-test-runner \
-    core-simple-mmodule-test
+    core-libart-intra-test \
+    core-simple-intra-test
 
 # Don't include this package in any target
 LOCAL_MODULE_TAGS := tests
