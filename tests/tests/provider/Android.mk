@@ -35,11 +35,7 @@ LOCAL_USE_AAPT2 := true
 LOCAL_STATIC_JAVA_LIBRARIES := \
     compatibility-device-util \
     ctstestrunner \
-    ub-uiautomator \
     junit
-
-LOCAL_STATIC_ANDROID_LIBRARIES := \
-    androidx.legacy_legacy-support-v4 
 
 LOCAL_JNI_SHARED_LIBRARIES := libcts_jni libnativehelper_compat_libc++
 
