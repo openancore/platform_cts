@@ -31,6 +31,11 @@ public class SELinuxTargetSdkTest extends SELinuxTargetSdkTestBase
         noDns();
     }
 
+
+    public void testCanNotExecuteFromHomeDir() throws Exception {
+        assertFalse(canExecuteFromHomeDir());
+    }
+
     /**
      * Verify that selinux context is the expected domain based on
      * targetSdkVersion = current
