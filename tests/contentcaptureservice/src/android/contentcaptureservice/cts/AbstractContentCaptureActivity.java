@@ -16,10 +16,17 @@
 package android.contentcaptureservice.cts;
 
 import android.app.Activity;
+import android.view.contentcapture.ContentCaptureManager;
+
+import androidx.annotation.Nullable;
 
 /**
  * Base class for all activities.
  */
 abstract class AbstractContentCaptureActivity extends Activity {
 
+    @Nullable
+    public ContentCaptureManager getContentCaptureManager() {
+        return getSystemService(ContentCaptureManager.class);
+    }
 }
