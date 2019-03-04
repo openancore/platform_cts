@@ -16,7 +16,7 @@
 
 package android.server.am.second;
 
-import android.app.Activity;
+import android.server.am.CommandSession;
 
-public class SecondActivityNoEmbedding extends Activity {
+public class SecondActivityNoEmbedding extends CommandSession.BasicTestActivity {
 }
