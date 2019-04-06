@@ -1,4 +1,4 @@
-# Copyright (C) 2016 The Android Open Source Project
+# Copyright (C) 2018 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,28 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# This is the shared library included by the JNI test app.
-#
-
 LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libjnicommon
+LOCAL_MODULE_TAGS := tests
+LOCAL_SDK_VERSION := test_current
+LOCAL_STATIC_JAVA_LIBRARIES := \
+    compatibility-device-util-axt \
+    androidx.test.rules \
+    ub-uiautomator
 
-# Don't include this package in any configuration by default.
-LOCAL_MODULE_TAGS := optional
+LOCAL_JAVA_LIBRARIES := android.test.base.stubs
 
-LOCAL_SRC_FILES := common.cpp
+LOCAL_SRC_FILES := $(call all-java-files-under, ../MediaStorageApp/src/)
+LOCAL_ASSET_DIR := $(LOCAL_PATH)/../MediaStorageApp/assets
 
-LOCAL_CFLAGS := -Wall -Werror
+LOCAL_PACKAGE_NAME := CtsMediaStorageAppFull
 
-LOCAL_C_INCLUDES := $(JNI_H_INCLUDE)
+LOCAL_COMPATIBILITY_SUITE := cts vts general-tests
+LOCAL_DEX_PREOPT := false
 
-LOCAL_SHARED_LIBRARIES := libdl liblog libnativehelper_compat_libc++
-
-LOCAL_SDK_VERSION := 23
-LOCAL_NDK_STL_VARIANT := c++_shared
-
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_CTS_SUPPORT_PACKAGE)
