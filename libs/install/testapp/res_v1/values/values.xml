@@ -16,4 +16,5 @@
 
 <resources>
     <integer name="app_version">1</integer>
+    <integer name="split_version">0</integer>
 </resources>
