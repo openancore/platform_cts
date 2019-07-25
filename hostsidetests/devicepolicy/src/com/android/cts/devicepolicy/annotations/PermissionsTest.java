@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Denotes that a test depends on permissions functionality and should be run in presubmit when
- * permissions changes are made. See http://go/ae-cts-presubmit for more information.
+ * permissions code changes are made.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
