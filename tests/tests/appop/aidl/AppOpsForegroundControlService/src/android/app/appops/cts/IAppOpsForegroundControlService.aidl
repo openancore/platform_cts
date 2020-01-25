@@ -21,5 +21,12 @@ interface IAppOpsForegroundControlService {
     void waitUntilBackground();
     void waitUntilForeground();
     void finishActivity();
+
+    void waitUntilForegroundServiceStarted();
+    void stopForegroundService();
+
+    void waitUntilLocationForegroundServiceStarted();
+    void stopLocationForegroundService();
+
     void cleanup();
 }
