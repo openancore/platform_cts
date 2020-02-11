@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-package android.app.appops.cts.appthatusesappops
+package com.android.cts.useprocess;
 
-import android.app.Activity
-import android.os.Bundle
-
-class AutoClosingActivity : Activity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        finish()
-    }
+public class ProviderWithNetwork2 extends ProviderWithNetwork1 {
 }
