@@ -16,16 +16,13 @@
 
 package com.android.cts.verifier.biometrics;
 
-import android.hardware.biometrics.BiometricPrompt;
+import android.security.keystore.KeyProperties;
 
-import javax.crypto.Cipher;
+import com.android.cts.verifier.R;
 
-public class UserAuthenticationCredentialCipherTest extends
-        AbstractUserAuthenticationCredentialTest {
+public class UserAuthenticationCredentialCipherTest extends AbstractUserAuthenticationCipherTest {
 
     private static final String TAG = "UserAuthenticationCredentialCipherTest";
-
-    private Cipher mCipher;
 
     @Override
     String getTag() {
@@ -33,21 +30,37 @@ public class UserAuthenticationCredentialCipherTest extends
     }
 
     @Override
-    void initializeKeystoreOperation(String keyName) throws Exception {
-        mCipher = Utils.initCipher(keyName);
+    int getInstructionsResourceId() {
+        return R.string.biometric_test_set_user_authentication_credential_instructions;
     }
 
     @Override
-    BiometricPrompt.CryptoObject getCryptoObject() {
-        return new BiometricPrompt.CryptoObject(mCipher);
+    ExpectedResults getExpectedResults() {
+        return new ExpectedResults() {
+            @Override
+            boolean shouldCredentialUnlockPerUseKey() {
+                return true;
+            }
+
+            @Override
+            boolean shouldCredentialUnlockTimedKey() {
+                return true;
+            }
+
+            @Override
+            boolean shouldBiometricUnlockPerUseKey() {
+                return false;
+            }
+
+            @Override
+            boolean shouldBiometricUnlockTimedKey() {
+                return false;
+            }
+        };
     }
 
     @Override
-    void doKeystoreOperation(byte[] payload) throws Exception {
-        try {
-            Utils.doEncrypt(mCipher, payload);
-        } finally {
-            mCipher = null;
-        }
+    int getKeyAuthenticators() {
+        return KeyProperties.AUTH_DEVICE_CREDENTIAL;
     }
 }
