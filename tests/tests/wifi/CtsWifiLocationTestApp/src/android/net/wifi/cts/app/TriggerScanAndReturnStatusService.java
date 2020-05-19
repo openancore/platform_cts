@@ -16,7 +16,6 @@
 
 package android.net.wifi.cts.app;
 
-import android.app.Activity;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.net.wifi.WifiManager;
