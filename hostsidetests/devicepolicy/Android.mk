@@ -27,7 +27,7 @@ LOCAL_JAVA_LIBRARIES := tools-common-prebuilt cts-tradefed tradefed compatibilit
 LOCAL_CTS_TEST_PACKAGE := android.adminhostside
 
 # tag this module as a cts test artifact
-LOCAL_COMPATIBILITY_SUITE := cts arcts vts general-tests
+LOCAL_COMPATIBILITY_SUITE := cts arcts vts general-tests sts
 
 # Need the dependency to build/run the module solely by atest.
 LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_TESTCASES)/cts-current-api/current.api
