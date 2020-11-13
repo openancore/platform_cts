@@ -20,6 +20,7 @@ android_test {
         "androidx.test.rules",
         "compatibility-device-util-axt",
         "platform-test-annotations",
+        "cts-wm-util",
     ],
     resource_dirs: ["res"],
     srcs: ["src/**/*.java"],
