@@ -18,8 +18,11 @@ package android.scopedstorage.cts.device;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.scopedstorage.cts.lib.TestUtils;
+
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,12 +32,17 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ScopedStorageDeviceTest {
 
+    @BeforeClass
+    public static void deletePublicVolumes() throws Exception {
+        TestUtils.resetDefaultExternalStorageVolume();
+    }
+
     /**
      * No-op test.
      */
     @Test
     public void noopTest() {
-        // TODO(b/159593019): Move tests that don't require host side support from
+        // TODO(159593019): Move tests that don't require host side support from
         // ScopedStorageTest here.
         assertThat(5).isAtLeast(4);
     }
