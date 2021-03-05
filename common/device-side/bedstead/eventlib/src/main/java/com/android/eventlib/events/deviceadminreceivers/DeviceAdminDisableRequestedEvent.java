@@ -32,7 +32,7 @@ import com.android.eventlib.queryhelpers.IntentQueryHelper;
 import com.android.eventlib.util.SerializableParcelWrapper;
 
 /**
- * Event logged when {@link DeviceAdminReceiver#onDisableRequested(Context, Intent)}.
+ * Event logged when {@link DeviceAdminReceiver#onDisableRequested(Context, Intent)} is called.
  */
 public final class DeviceAdminDisableRequestedEvent extends Event {
 
