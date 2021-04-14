@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
 /**
  * Parameterize a test so that it runs on the same user as the device owner.
  */
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @ParameterizedAnnotation
 @RequireRunOnPrimaryUser
