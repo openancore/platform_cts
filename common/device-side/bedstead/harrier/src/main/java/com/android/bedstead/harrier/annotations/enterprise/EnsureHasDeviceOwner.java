@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EnsureHasDeviceOwner {
-    /** Which user type the work profile should be attached to. */
+    /** Which user type the device owner should be installed on. */
     DeviceState.UserType onUser() default SYSTEM_USER;
 }
 // TODO(scottjonathan): Is there a feature or something that we need to check to make sure DO is
