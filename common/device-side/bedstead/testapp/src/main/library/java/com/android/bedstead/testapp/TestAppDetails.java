@@ -16,6 +16,7 @@
 
 package com.android.bedstead.testapp;
 
+/** Details about a queryable test app. */
 class TestAppDetails {
     String mPackageName;
     int mResourceIdentifier;
