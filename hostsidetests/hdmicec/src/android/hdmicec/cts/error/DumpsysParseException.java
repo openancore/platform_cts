@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.bedstead.testapp;
+package android.hdmicec.cts.error;
 
-/** Internal class which will be generated. */
-public final class TargetedRemoteActivityImpl implements TargetedRemoteActivity {
-    @Override
-    public void startLockTask(String activityClassName) {
-        BaseTestAppActivity.findActivity(activityClassName).startLockTask();
+/** DumpsysParseException to be thrown when there are any issues while parsing the dumpsys. */
+public class DumpsysParseException extends Exception {
+
+    public DumpsysParseException(String message) {
+        super(message);
     }
 
-    @Override
-    public void stopLockTask(String activityClassName) {
-        BaseTestAppActivity.findActivity(activityClassName).stopLockTask();
-    }
-
-    @Override
-    public boolean isFinishing(String activityClassName) {
-        return BaseTestAppActivity.findActivity(activityClassName).isFinishing();
+    public DumpsysParseException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
