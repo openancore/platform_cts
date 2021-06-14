@@ -22,5 +22,5 @@ import com.android.queryable.Queryable;
 
 /** Query for an {@link Activity}. */
 public interface ActivityQuery<E extends Queryable> extends ClassQuery<E>  {
-
+    BooleanQuery<E> exported();
 }
