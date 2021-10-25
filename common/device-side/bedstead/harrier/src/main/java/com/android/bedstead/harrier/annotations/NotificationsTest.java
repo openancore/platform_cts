@@ -16,6 +16,8 @@
 
 package com.android.bedstead.harrier.annotations;
 
+import static com.android.bedstead.nene.utils.Tags.USES_NOTIFICATIONS;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -31,5 +33,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @RequireNotLowRamDevice(
         reason = "This test uses NotificationListener which is not supported on low ram devices")
+@TestTag(USES_NOTIFICATIONS)
 public @interface NotificationsTest {
 }
