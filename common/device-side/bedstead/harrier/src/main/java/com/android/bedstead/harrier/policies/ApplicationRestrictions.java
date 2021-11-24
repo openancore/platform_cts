@@ -16,10 +16,13 @@
 
 package com.android.bedstead.harrier.policies;
 
+import static android.app.admin.DevicePolicyManager.DELEGATION_APP_RESTRICTIONS;
+
 import static com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy.APPLIED_BY_DEVICE_OWNER;
 import static com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy.APPLIED_BY_PROFILE_OWNER;
 import static com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy.APPLIES_IN_BACKGROUND;
 import static com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy.APPLIES_TO_OWN_USER;
+import static com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy.CAN_BE_DELEGATED;
 
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -34,8 +37,11 @@ import com.android.bedstead.harrier.annotations.enterprise.EnterprisePolicy;
  * {@link DevicePolicyManager#setApplicationRestrictions(ComponentName, String, Bundle)} and
  * {@link DevicePolicyManager#getApplicationRestrictions(ComponentName, String)}.
  */
-@EnterprisePolicy(dpc = {
-        APPLIED_BY_DEVICE_OWNER | APPLIES_TO_OWN_USER | APPLIES_IN_BACKGROUND,
-        APPLIED_BY_PROFILE_OWNER | APPLIES_TO_OWN_USER})
+@EnterprisePolicy(
+        dpc = {
+            APPLIED_BY_DEVICE_OWNER | APPLIES_TO_OWN_USER | APPLIES_IN_BACKGROUND | CAN_BE_DELEGATED,
+            APPLIED_BY_PROFILE_OWNER | APPLIES_TO_OWN_USER | CAN_BE_DELEGATED},
+        delegatedScopes = DELEGATION_APP_RESTRICTIONS
+        )
 public final class ApplicationRestrictions {
 }
