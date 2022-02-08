@@ -26,6 +26,7 @@ android_test {
         ":CtsGameServiceFalsePositiveGame",
         ":CtsGameServiceGame",
         ":CtsGameServiceNotGame",
+        ":CtsGameServiceRestartGameVerifier",
         ":CtsGameServiceStartActivityVerifier",
     ],
     libs: [
