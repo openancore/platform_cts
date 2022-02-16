@@ -38,6 +38,8 @@ import java.lang.annotation.Target;
 @Repeatable(EnsureTestAppsInstalled.class)
 public @interface EnsureTestAppInstalled {
 
+    int ENSURE_TEST_APP_INSTALLED_WEIGHT = MIDDLE;
+
     String DEFAULT_TEST_APP_KEY = "testApp";
 
     /** A key which uniquely identifies the test app for the test. */
@@ -66,5 +68,5 @@ public @interface EnsureTestAppInstalled {
      *
      * <p>Weight can be set to a {@link AnnotationRunPrecedence} constant, or to any {@link int}.
      */
-    int weight() default MIDDLE;
+    int weight() default ENSURE_TEST_APP_INSTALLED_WEIGHT;
 }
