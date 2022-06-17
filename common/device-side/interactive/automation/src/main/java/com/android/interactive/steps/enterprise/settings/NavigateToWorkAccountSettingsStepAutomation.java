@@ -20,7 +20,7 @@ import com.android.interactive.Automation;
 import com.android.interactive.annotations.AutomationFor;
 
 @AutomationFor("com.android.interactive.steps.enterprise.settings.NavigateToWorkAccountSettingsStep")
-public class NavigateToWorkAccountSettingsStepAutomation implements Automation {
+public final class NavigateToWorkAccountSettingsStepAutomation implements Automation {
     @Override
     public void automate() {
         // There is only one Settings app

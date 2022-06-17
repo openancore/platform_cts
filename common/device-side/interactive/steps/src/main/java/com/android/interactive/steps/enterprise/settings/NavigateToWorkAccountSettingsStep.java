@@ -26,7 +26,7 @@ import java.util.Arrays;
  *
  * <p>This will be the only settings app if there is no separate work settings app.
  */
-public class NavigateToWorkAccountSettingsStep extends CompositionStep {
+public final class NavigateToWorkAccountSettingsStep extends CompositionStep {
     public NavigateToWorkAccountSettingsStep() {
         super(Arrays.asList(LaunchWorkSettingsStep.class, NavigateToAccountSettingsStep.class));
     }
