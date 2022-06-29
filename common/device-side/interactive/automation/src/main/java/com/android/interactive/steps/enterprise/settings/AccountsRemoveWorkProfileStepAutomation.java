@@ -27,7 +27,7 @@ import com.android.interactive.Automation;
 import com.android.interactive.annotations.AutomationFor;
 
 @AutomationFor("com.android.interactive.steps.enterprise.settings.AccountsRemoveWorkProfileStep")
-public class AccountsRemoveWorkProfileStepAutomation implements Automation {
+public final class AccountsRemoveWorkProfileStepAutomation implements Automation {
     @Override
     public void automate() throws Throwable {
         // TODO: Standardise UI interaction patterns
