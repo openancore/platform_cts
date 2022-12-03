@@ -40,7 +40,13 @@ import java.util.ArrayList;
 
 /**
  * Wrapper class for trying and testing encoder components.
+ * @deprecated This class is marked for future removal. Use {@link EncoderTestBase} instead.
+ * {@link EncoderTestBase} offers same functionality as the current class. Besides that, it has
+ * utility functions for muxing, offers better control over configuration params, utility
+ * functions for better test labelling.
+ * TODO (b/260533828) remove this once all encoders are update to use {@link EncoderConfigParams}
  */
+@Deprecated(forRemoval = true)
 public class CodecEncoderTestBase extends CodecTestBase {
     private static final String LOG_TAG = CodecEncoderTestBase.class.getSimpleName();
 
