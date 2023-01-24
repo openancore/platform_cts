@@ -32,6 +32,7 @@ android_test {
     data: [
         ":EmptySdkProviderApp",
         ":WebViewSandboxTestSdk",
+        ":WebViewSandboxZoomTestSdk",
     ],
     srcs: [
         "src/**/*.java",
