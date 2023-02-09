@@ -7637,6 +7637,26 @@ package android.app.admin {
     method public final android.os.IBinder onBind(android.content.Intent);
   }
 
+  public final class DevicePolicyIdentifiers {
+    method @NonNull public static String getIdentifierForUserRestriction(@NonNull String);
+    field public static final String ACCOUNT_MANAGEMENT_DISABLED_POLICY = "accountManagementDisabled";
+    field public static final String APPLICATION_HIDDEN_POLICY = "applicationHidden";
+    field public static final String APPLICATION_RESTRICTIONS_POLICY = "applicationRestrictions";
+    field public static final String AUTO_TIMEZONE_POLICY = "autoTimezone";
+    field public static final String AUTO_TIME_POLICY = "autoTime";
+    field public static final String BACKUP_SERVICE_POLICY = "backupService";
+    field public static final String CAMERA_DISABLED_POLICY = "cameraDisabled";
+    field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
+    field public static final String LOCK_TASK_POLICY = "lockTask";
+    field public static final String PACKAGES_SUSPENDED_POLICY = "packagesSuspended";
+    field public static final String PACKAGE_UNINSTALL_BLOCKED_POLICY = "packageUninstallBlocked";
+    field public static final String PERMISSION_GRANT_POLICY = "permissionGrant";
+    field public static final String PERSISTENT_PREFERRED_ACTIVITY_POLICY = "persistentPreferredActivity";
+    field public static final String RESET_PASSWORD_TOKEN_POLICY = "resetPasswordToken";
+    field public static final String STATUS_BAR_DISABLED_POLICY = "statusBarDisabled";
+    field public static final String USER_CONTROL_DISABLED_PACKAGES_POLICY = "userControlDisabledPackages";
+  }
+
   public class DevicePolicyManager {
     method public void acknowledgeDeviceCompliant();
     method public void addCrossProfileIntentFilter(@NonNull android.content.ComponentName, android.content.IntentFilter, int);
@@ -7644,6 +7664,7 @@ package android.app.admin {
     method public int addOverrideApn(@NonNull android.content.ComponentName, @NonNull android.telephony.data.ApnSetting);
     method public void addPersistentPreferredActivity(@NonNull android.content.ComponentName, android.content.IntentFilter, @NonNull android.content.ComponentName);
     method public void addUserRestriction(@NonNull android.content.ComponentName, String);
+    method public void addUserRestrictionGlobally(@NonNull String);
     method public boolean bindDeviceAdminServiceAsUser(@NonNull android.content.ComponentName, android.content.Intent, @NonNull android.content.ServiceConnection, int, @NonNull android.os.UserHandle);
     method public boolean canAdminGrantSensorsPermissions();
     method public boolean canUsbDataSignalingBeDisabled();
@@ -7689,6 +7710,7 @@ package android.app.admin {
     method @Nullable public android.app.admin.FactoryResetProtectionPolicy getFactoryResetProtectionPolicy(@Nullable android.content.ComponentName);
     method @Nullable public String getGlobalPrivateDnsHost(@NonNull android.content.ComponentName);
     method public int getGlobalPrivateDnsMode(@NonNull android.content.ComponentName);
+    method @NonNull public android.os.Bundle getGlobalUserRestrictions();
     method @NonNull public java.util.List<byte[]> getInstalledCaCerts(@Nullable android.content.ComponentName);
     method @Nullable public java.util.List<java.lang.String> getKeepUninstalledPackages(@Nullable android.content.ComponentName);
     method @NonNull public java.util.Map<java.lang.Integer,java.util.Set<java.lang.String>> getKeyPairGrants(@NonNull String);
@@ -7708,7 +7730,7 @@ package android.app.admin {
     method @RequiresPermission(value=android.Manifest.permission.READ_NEARBY_STREAMING_POLICY, conditional=true) public int getNearbyAppStreamingPolicy();
     method @RequiresPermission(value=android.Manifest.permission.READ_NEARBY_STREAMING_POLICY, conditional=true) public int getNearbyNotificationStreamingPolicy();
     method @Deprecated @ColorInt public int getOrganizationColor(@NonNull android.content.ComponentName);
-    method @Nullable public CharSequence getOrganizationName(@NonNull android.content.ComponentName);
+    method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY) public CharSequence getOrganizationName(@Nullable android.content.ComponentName);
     method public java.util.List<android.telephony.data.ApnSetting> getOverrideApns(@NonNull android.content.ComponentName);
     method @NonNull public android.app.admin.DevicePolicyManager getParentProfileInstance(@NonNull android.content.ComponentName);
     method @RequiresPermission(android.Manifest.permission.REQUEST_PASSWORD_COMPLEXITY) public int getPasswordComplexity();
@@ -7788,6 +7810,7 @@ package android.app.admin {
     method public boolean isResetPasswordTokenActive(android.content.ComponentName);
     method public boolean isSafeOperation(int);
     method public boolean isSecurityLoggingEnabled(@Nullable android.content.ComponentName);
+    method public boolean isStatusBarDisabled();
     method public boolean isUninstallBlocked(@Nullable android.content.ComponentName, String);
     method public boolean isUniqueDeviceAttestationSupported();
     method public boolean isUsbDataSignalingEnabled();
@@ -7863,7 +7886,7 @@ package android.app.admin {
     method public void setNetworkLoggingEnabled(@Nullable android.content.ComponentName, boolean);
     method @Deprecated public void setOrganizationColor(@NonNull android.content.ComponentName, int);
     method public void setOrganizationId(@NonNull String);
-    method public void setOrganizationName(@NonNull android.content.ComponentName, @Nullable CharSequence);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_POLICY_ORGANIZATION_IDENTITY) public void setOrganizationName(@Nullable android.content.ComponentName, @Nullable CharSequence);
     method public void setOverrideApnsEnabled(@NonNull android.content.ComponentName, boolean);
     method @NonNull public String[] setPackagesSuspended(@NonNull android.content.ComponentName, @NonNull String[], boolean);
     method public void setPasswordExpirationTimeout(@NonNull android.content.ComponentName, long);
@@ -8189,7 +8212,10 @@ package android.app.admin {
     ctor public PolicyUpdateResult(int);
     method public int getResultCode();
     field public static final int RESULT_FAILURE_CONFLICTING_ADMIN_POLICY = 1; // 0x1
+    field public static final int RESULT_FAILURE_HARDWARE_LIMITATION = 4; // 0x4
+    field public static final int RESULT_FAILURE_STORAGE_LIMIT_REACHED = 3; // 0x3
     field public static final int RESULT_FAILURE_UNKNOWN = -1; // 0xffffffff
+    field public static final int RESULT_POLICY_CLEARED = 2; // 0x2
     field public static final int RESULT_SUCCESS = 0; // 0x0
   }
 
@@ -8200,6 +8226,7 @@ package android.app.admin {
     method public final void onReceive(android.content.Context, android.content.Intent);
     field public static final String ACTION_DEVICE_POLICY_CHANGED = "android.app.admin.action.DEVICE_POLICY_CHANGED";
     field public static final String ACTION_DEVICE_POLICY_SET_RESULT = "android.app.admin.action.DEVICE_POLICY_SET_RESULT";
+    field public static final String EXTRA_ACCOUNT_TYPE = "android.app.admin.extra.ACCOUNT_TYPE";
     field public static final String EXTRA_INTENT_FILTER = "android.app.admin.extra.INTENT_FILTER";
     field public static final String EXTRA_PACKAGE_NAME = "android.app.admin.extra.PACKAGE_NAME";
     field public static final String EXTRA_PERMISSION_NAME = "android.app.admin.extra.PERMISSION_NAME";
@@ -11269,7 +11296,8 @@ package android.content {
   public class RestrictionsManager {
     method public static android.os.Bundle convertRestrictionsToBundle(java.util.List<android.content.RestrictionEntry>);
     method public android.content.Intent createLocalApprovalIntent();
-    method public android.os.Bundle getApplicationRestrictions();
+    method @Deprecated public android.os.Bundle getApplicationRestrictions();
+    method @NonNull @WorkerThread public java.util.Map<java.lang.String,android.os.Bundle> getApplicationRestrictionsPerAdmin(@NonNull String);
     method public java.util.List<android.content.RestrictionEntry> getManifestRestrictions(String);
     method public boolean hasRestrictionsProvider();
     method public void notifyPermissionResponse(String, android.os.PersistableBundle);
@@ -13465,7 +13493,7 @@ package android.credentials {
     ctor public CreateCredentialException(@NonNull String);
     method @NonNull public String getType();
     field @NonNull public static final String TYPE_INTERRUPTED = "android.credentials.CreateCredentialException.TYPE_INTERRUPTED";
-    field @NonNull public static final String TYPE_NO_CREDENTIAL = "android.credentials.CreateCredentialException.TYPE_NO_CREDENTIAL";
+    field @NonNull public static final String TYPE_NO_CREATE_OPTIONS = "android.credentials.CreateCredentialException.TYPE_NO_CREATE_OPTIONS";
     field @NonNull public static final String TYPE_UNKNOWN = "android.credentials.CreateCredentialException.TYPE_UNKNOWN";
     field @NonNull public static final String TYPE_USER_CANCELED = "android.credentials.CreateCredentialException.TYPE_USER_CANCELED";
   }
@@ -15644,26 +15672,31 @@ package android.graphics {
   }
 
   public class MeshSpecification {
-    method @NonNull public static android.graphics.MeshSpecification make(@NonNull java.util.List<android.graphics.MeshSpecification.Attribute>, int, @NonNull java.util.List<android.graphics.MeshSpecification.Varying>, @NonNull String, @NonNull String);
-    method @NonNull public static android.graphics.MeshSpecification make(@NonNull java.util.List<android.graphics.MeshSpecification.Attribute>, int, @NonNull java.util.List<android.graphics.MeshSpecification.Varying>, @NonNull String, @NonNull String, @NonNull android.graphics.ColorSpace);
-    method @NonNull public static android.graphics.MeshSpecification make(@NonNull java.util.List<android.graphics.MeshSpecification.Attribute>, int, @NonNull java.util.List<android.graphics.MeshSpecification.Varying>, @NonNull String, @NonNull String, @NonNull android.graphics.ColorSpace, int);
-    field public static final int FLOAT = 0; // 0x0
-    field public static final int FLOAT2 = 1; // 0x1
-    field public static final int FLOAT3 = 2; // 0x2
-    field public static final int FLOAT4 = 3; // 0x3
-    field public static final int OPAQUE = 1; // 0x1
-    field public static final int PREMUL = 2; // 0x2
-    field public static final int UBYTE4 = 4; // 0x4
-    field public static final int UNKNOWN = 0; // 0x0
-    field public static final int UNPREMULT = 3; // 0x3
+    method @NonNull public static android.graphics.MeshSpecification make(@NonNull @Size(max=8) android.graphics.MeshSpecification.Attribute[], @IntRange(from=1, to=1024) int, @NonNull @Size(max=6) android.graphics.MeshSpecification.Varying[], @NonNull String, @NonNull String);
+    method @NonNull public static android.graphics.MeshSpecification make(@NonNull @Size(max=8) android.graphics.MeshSpecification.Attribute[], @IntRange(from=1, to=1024) int, @NonNull @Size(max=6) android.graphics.MeshSpecification.Varying[], @NonNull String, @NonNull String, @NonNull android.graphics.ColorSpace);
+    method @NonNull public static android.graphics.MeshSpecification make(@NonNull @Size(max=8) android.graphics.MeshSpecification.Attribute[], @IntRange(from=1, to=1024) int, @NonNull @Size(max=6) android.graphics.MeshSpecification.Varying[], @NonNull String, @NonNull String, @NonNull android.graphics.ColorSpace, int);
+    field public static final int ALPHA_TYPE_OPAQUE = 1; // 0x1
+    field public static final int ALPHA_TYPE_PREMUL = 2; // 0x2
+    field public static final int ALPHA_TYPE_PREMULT = 3; // 0x3
+    field public static final int ALPHA_TYPE_UNKNOWN = 0; // 0x0
+    field public static final int TYPE_FLOAT = 0; // 0x0
+    field public static final int TYPE_FLOAT2 = 1; // 0x1
+    field public static final int TYPE_FLOAT3 = 2; // 0x2
+    field public static final int TYPE_FLOAT4 = 3; // 0x3
+    field public static final int TYPE_UBYTE4 = 4; // 0x4
   }
 
   public static class MeshSpecification.Attribute {
     ctor public MeshSpecification.Attribute(int, int, @NonNull String);
+    method @NonNull public String getName();
+    method public int getOffset();
+    method public int getType();
   }
 
   public static class MeshSpecification.Varying {
     ctor public MeshSpecification.Varying(int, @NonNull String);
+    method @NonNull public String getName();
+    method public int getType();
   }
 
   @Deprecated public class Movie {
@@ -26536,8 +26569,16 @@ package android.media.tv {
     method public int getTableName();
     method public int getVersion();
     field @NonNull public static final android.os.Parcelable.Creator<android.media.tv.TableRequest> CREATOR;
+    field public static final int TABLE_NAME_BAT = 4; // 0x4
+    field public static final int TABLE_NAME_CAT = 2; // 0x2
+    field public static final int TABLE_NAME_EIT = 6; // 0x6
+    field public static final int TABLE_NAME_NIT = 3; // 0x3
     field public static final int TABLE_NAME_PAT = 0; // 0x0
     field public static final int TABLE_NAME_PMT = 1; // 0x1
+    field public static final int TABLE_NAME_SDT = 5; // 0x5
+    field public static final int TABLE_NAME_SIT = 9; // 0x9
+    field public static final int TABLE_NAME_TDT = 7; // 0x7
+    field public static final int TABLE_NAME_TOT = 8; // 0x8
   }
 
   public final class TableResponse extends android.media.tv.BroadcastInfoResponse implements android.os.Parcelable {
@@ -27450,9 +27491,12 @@ package android.media.tv.interactive {
     field public static final String COMMAND_PARAMETER_KEY_CHANGE_CHANNEL_QUIETLY = "command_change_channel_quietly";
     field public static final String COMMAND_PARAMETER_KEY_CHANNEL_URI = "command_channel_uri";
     field public static final String COMMAND_PARAMETER_KEY_INPUT_ID = "command_input_id";
+    field public static final String COMMAND_PARAMETER_KEY_STOP_MODE = "command_stop_mode";
     field public static final String COMMAND_PARAMETER_KEY_TRACK_ID = "command_track_id";
     field public static final String COMMAND_PARAMETER_KEY_TRACK_TYPE = "command_track_type";
     field public static final String COMMAND_PARAMETER_KEY_VOLUME = "command_volume";
+    field public static final int COMMAND_PARAMETER_VALUE_STOP_MODE_BLANK = 1; // 0x1
+    field public static final int COMMAND_PARAMETER_VALUE_STOP_MODE_FREEZE = 2; // 0x2
     field public static final String PLAYBACK_COMMAND_TYPE_SELECT_TRACK = "select_track";
     field public static final String PLAYBACK_COMMAND_TYPE_SET_STREAM_VOLUME = "set_stream_volume";
     field public static final String PLAYBACK_COMMAND_TYPE_STOP = "stop";
@@ -27481,6 +27525,7 @@ package android.media.tv.interactive {
     method public void onCurrentChannelLcn(int);
     method public void onCurrentChannelUri(@Nullable android.net.Uri);
     method public void onCurrentTvInputId(@Nullable String);
+    method public void onCurrentVideoBounds(@NonNull android.graphics.Rect);
     method public void onDestroyBiInteractiveAppRequest(@NonNull String);
     method public void onError(@NonNull String, @NonNull android.os.Bundle);
     method public boolean onGenericMotionEvent(@NonNull android.view.MotionEvent);
@@ -27518,6 +27563,7 @@ package android.media.tv.interactive {
     method @CallSuper public void requestCurrentChannelLcn();
     method @CallSuper public void requestCurrentChannelUri();
     method @CallSuper public void requestCurrentTvInputId();
+    method @CallSuper public void requestCurrentVideoBounds();
     method @CallSuper public void requestSigning(@NonNull String, @NonNull String, @NonNull String, @NonNull byte[]);
     method @CallSuper public void requestStartRecording(@Nullable android.net.Uri);
     method @CallSuper public void requestStopRecording(@NonNull String);
@@ -27570,6 +27616,7 @@ package android.media.tv.interactive {
     method public void sendCurrentChannelLcn(int);
     method public void sendCurrentChannelUri(@Nullable android.net.Uri);
     method public void sendCurrentTvInputId(@Nullable String);
+    method public void sendCurrentVideoBounds(@NonNull android.graphics.Rect);
     method public void sendSigningResult(@NonNull String, @NonNull byte[]);
     method public void sendStreamVolume(float);
     method public void sendTrackInfoList(@Nullable java.util.List<android.media.tv.TvTrackInfo>);
@@ -27600,6 +27647,7 @@ package android.media.tv.interactive {
     method public void onRequestCurrentChannelLcn(@NonNull String);
     method public void onRequestCurrentChannelUri(@NonNull String);
     method public void onRequestCurrentTvInputId(@NonNull String);
+    method public void onRequestCurrentVideoBounds(@NonNull String);
     method public void onRequestSigning(@NonNull String, @NonNull String, @NonNull String, @NonNull String, @NonNull byte[]);
     method public void onRequestStartRecording(@NonNull String, @Nullable android.net.Uri);
     method public void onRequestStopRecording(@NonNull String, @NonNull String);
@@ -33535,7 +33583,7 @@ package android.os {
 
   public class UserManager {
     method public static android.content.Intent createUserCreationIntent(@Nullable String, @Nullable String, @Nullable String, @Nullable android.os.PersistableBundle);
-    method @WorkerThread public android.os.Bundle getApplicationRestrictions(String);
+    method @Deprecated @WorkerThread public android.os.Bundle getApplicationRestrictions(String);
     method public long getSerialNumberForUser(android.os.UserHandle);
     method @RequiresPermission(anyOf={"android.permission.MANAGE_USERS", "android.permission.CREATE_USERS"}) public int getUserCount();
     method public long getUserCreationTime(android.os.UserHandle);
@@ -39475,6 +39523,7 @@ package android.service.autofill {
     method @NonNull public android.service.autofill.Dataset build();
     method @NonNull public android.service.autofill.Dataset.Builder setAuthentication(@Nullable android.content.IntentSender);
     method @NonNull public android.service.autofill.Dataset.Builder setField(@NonNull android.view.autofill.AutofillId, @Nullable android.service.autofill.Field);
+    method @NonNull public android.service.autofill.Dataset.Builder setField(@NonNull String, @NonNull android.service.autofill.Field);
     method @NonNull public android.service.autofill.Dataset.Builder setId(@Nullable String);
     method @Deprecated @NonNull public android.service.autofill.Dataset.Builder setInlinePresentation(@NonNull android.service.autofill.InlinePresentation);
     method @Deprecated @NonNull public android.service.autofill.Dataset.Builder setInlinePresentation(@NonNull android.service.autofill.InlinePresentation, @NonNull android.service.autofill.InlinePresentation);
@@ -39583,6 +39632,7 @@ package android.service.autofill {
     method @Nullable public android.content.IntentSender getDelayedFillIntentSender();
     method @NonNull public java.util.List<android.service.autofill.FillContext> getFillContexts();
     method public int getFlags();
+    method @NonNull public java.util.List<java.lang.String> getHints();
     method public int getId();
     method @Nullable public android.view.inputmethod.InlineSuggestionsRequest getInlineSuggestionsRequest();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -39611,6 +39661,7 @@ package android.service.autofill {
     method @Deprecated @NonNull public android.service.autofill.FillResponse.Builder setAuthentication(@NonNull android.view.autofill.AutofillId[], @Nullable android.content.IntentSender, @Nullable android.widget.RemoteViews, @Nullable android.service.autofill.InlinePresentation, @Nullable android.service.autofill.InlinePresentation);
     method @NonNull public android.service.autofill.FillResponse.Builder setAuthentication(@NonNull android.view.autofill.AutofillId[], @Nullable android.content.IntentSender, @Nullable android.service.autofill.Presentations);
     method @NonNull public android.service.autofill.FillResponse.Builder setClientState(@Nullable android.os.Bundle);
+    method @NonNull public android.service.autofill.FillResponse.Builder setDetectedFieldClassifications(@NonNull java.util.Set<android.service.assist.classification.FieldClassification>);
     method @NonNull public android.service.autofill.FillResponse.Builder setDialogHeader(@NonNull android.widget.RemoteViews);
     method @NonNull public android.service.autofill.FillResponse.Builder setFieldClassificationIds(@NonNull android.view.autofill.AutofillId...);
     method @NonNull public android.service.autofill.FillResponse.Builder setFillDialogTriggerIds(@NonNull android.view.autofill.AutofillId...);
@@ -40242,6 +40293,7 @@ package android.service.credentials {
   }
 
   public final class BeginCreateCredentialResponse implements android.os.Parcelable {
+    ctor public BeginCreateCredentialResponse();
     method public int describeContents();
     method @NonNull public java.util.List<android.service.credentials.CreateEntry> getCreateEntries();
     method @Nullable public android.service.credentials.CreateEntry getRemoteCreateEntry();
@@ -40283,6 +40335,7 @@ package android.service.credentials {
   }
 
   public final class BeginGetCredentialResponse implements android.os.Parcelable {
+    ctor public BeginGetCredentialResponse();
     method public int describeContents();
     method @NonNull public java.util.List<android.service.credentials.Action> getActions();
     method @NonNull public java.util.List<android.service.credentials.Action> getAuthenticationActions();
@@ -40976,7 +41029,7 @@ package android.service.voice {
     method public void onRequestCompleteVoice(android.service.voice.VoiceInteractionSession.CompleteVoiceRequest);
     method public void onRequestConfirmation(android.service.voice.VoiceInteractionSession.ConfirmationRequest);
     method public void onRequestPickOption(android.service.voice.VoiceInteractionSession.PickOptionRequest);
-    method public void onShow(android.os.Bundle, int);
+    method public void onShow(@Nullable android.os.Bundle, int);
     method public void onTaskFinished(android.content.Intent, int);
     method public void onTaskStarted(android.content.Intent, int);
     method public void onTrimMemory(int);
@@ -44008,6 +44061,7 @@ package android.telephony {
     field public static final int IWLAN_SEMANTIC_ERROR_IN_THE_TFT_OPERATION = 8241; // 0x2031
     field public static final int IWLAN_SYNTACTICAL_ERRORS_IN_PACKET_FILTERS = 8245; // 0x2035
     field public static final int IWLAN_SYNTACTICAL_ERROR_IN_THE_TFT_OPERATION = 8242; // 0x2032
+    field public static final int IWLAN_TUNNEL_NOT_FOUND = 16390; // 0x4006
     field public static final int IWLAN_UNAUTHENTICATED_EMERGENCY_NOT_SUPPORTED = 11055; // 0x2b2f
     field public static final int IWLAN_USER_UNKNOWN = 9001; // 0x2329
     field public static final int LIMITED_TO_IPV4 = 2234; // 0x8ba
