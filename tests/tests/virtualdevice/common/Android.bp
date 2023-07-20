@@ -19,8 +19,8 @@ package {
 android_library {
     name: "CtsVirtualDeviceCommonLib",
     srcs: [
-        "aidl/**/*.aidl",
         "src/**/*.java",
+        "//cts/tests/tests/virtualdevice:CtsVirtualDevicesTestAidl",
     ],
     static_libs: [
         "androidx.test.ext.junit",
