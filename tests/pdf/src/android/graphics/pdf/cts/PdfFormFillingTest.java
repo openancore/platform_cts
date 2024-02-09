@@ -16,29 +16,29 @@
 
 package android.graphics.pdf.cts;
 
-import static android.graphics.pdf.cts.Utils.createPreVRenderer;
 import static android.graphics.pdf.cts.Utils.createRenderer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.pdf.PdfRenderer;
-import android.graphics.pdf.PdfRendererPreV;
 import android.graphics.pdf.models.ChoiceOption;
 import android.graphics.pdf.models.FormEditRecord;
 import android.graphics.pdf.models.FormWidgetInfo;
 
 import androidx.annotation.RawRes;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -55,9 +55,132 @@ public class PdfFormFillingTest {
 
     private Context mContext;
 
+    /**
+     * Returns {@code true} if every {@code innerRect} is contained by at least one {@code
+     * outerRect}
+     */
+    private static boolean fullyContain(List<Rect> innerRects, List<Rect> outerRects) {
+        outerLoop:
+        for (Rect inner : innerRects) {
+            for (Rect outer : outerRects) {
+                if (outer.contains(inner)) {
+                    continue outerLoop;
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static FormWidgetInfo makeCheckbox(
+            int widgetIndex,
+            Rect widgetRect,
+            boolean readOnly,
+            String textValue,
+            String accessibilityLabel) {
+        return new FormWidgetInfo.Builder(
+                        FormWidgetInfo.WIDGET_TYPE_CHECKBOX,
+                        widgetIndex,
+                        widgetRect,
+                        textValue,
+                        accessibilityLabel)
+                .setReadOnly(readOnly)
+                .build();
+    }
+
+    private static FormWidgetInfo makeRadioButton(
+            int widgetIndex,
+            Rect widgetRect,
+            boolean readOnly,
+            String textValue,
+            String accessibilityLabel) {
+        return new FormWidgetInfo.Builder(
+                        FormWidgetInfo.WIDGET_TYPE_RADIOBUTTON,
+                        widgetIndex,
+                        widgetRect,
+                        textValue,
+                        accessibilityLabel)
+                .setReadOnly(readOnly)
+                .build();
+    }
+
+    private static FormWidgetInfo makeCombobox(
+            int widgetIndex,
+            Rect widgetRect,
+            boolean readOnly,
+            String textValue,
+            String accessibilityLabel,
+            boolean editableText,
+            float fontSize,
+            List<ChoiceOption> choiceOptions) {
+        FormWidgetInfo.Builder builder =
+                new FormWidgetInfo.Builder(
+                                FormWidgetInfo.WIDGET_TYPE_COMBOBOX,
+                                widgetIndex,
+                                widgetRect,
+                                textValue,
+                                accessibilityLabel)
+                        .setReadOnly(readOnly)
+                        .setEditableText(editableText)
+                        .setChoiceOptions(choiceOptions);
+        if (fontSize > 0) {
+            builder.setFontSize(fontSize);
+        }
+        return builder.build();
+    }
+
+    private static FormWidgetInfo makeListbox(
+            int widgetIndex,
+            Rect widgetRect,
+            boolean readOnly,
+            String textValue,
+            String accessibilityLabel,
+            boolean multiSelect,
+            List<ChoiceOption> choiceOptions) {
+        return new FormWidgetInfo.Builder(
+                        FormWidgetInfo.WIDGET_TYPE_LISTBOX,
+                        widgetIndex,
+                        widgetRect,
+                        textValue,
+                        accessibilityLabel)
+                .setReadOnly(readOnly)
+                .setMultiSelect(multiSelect)
+                .setChoiceOptions(choiceOptions)
+                .build();
+    }
+
+    private static FormWidgetInfo makeTextField(
+            int widgetIndex,
+            Rect widgetRect,
+            boolean readOnly,
+            String textValue,
+            String accessibilityLabel,
+            boolean editableText,
+            boolean multiLineText,
+            int maxLength,
+            float fontSize) {
+        FormWidgetInfo.Builder builder =
+                new FormWidgetInfo.Builder(
+                                FormWidgetInfo.WIDGET_TYPE_TEXTFIELD,
+                                widgetIndex,
+                                widgetRect,
+                                textValue,
+                                accessibilityLabel)
+                        .setReadOnly(readOnly)
+                        .setEditableText(editableText)
+                        .setMultiLineText(multiLineText);
+        if (fontSize > 0) {
+            builder.setFontSize(fontSize);
+        }
+        if (maxLength > 0) {
+            builder.setMaxLength(maxLength);
+        }
+        return builder.build();
+    }
+
     @Before
     public void setup() {
-        mContext = InstrumentationRegistry.getTargetContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
 
     @Test
@@ -416,12 +539,26 @@ public class PdfFormFillingTest {
 
     @Test
     public void getFormWidgetInfo_invalidIndex() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return null
+        try (PdfRenderer renderer = createRenderer(CLICK_FORM, mContext)) {
+            try (PdfRenderer.Page page = renderer.openPage(0)) {
+                int emptyIndex = 999;
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> page.getFormWidgetInfoAtIndex(emptyIndex));
+            }
+        }
     }
 
     @Test
     public void getFormWidgetInfo_emptyPoint() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return null
+        try (PdfRenderer renderer = createRenderer(CLICK_FORM, mContext)) {
+            try (PdfRenderer.Page page = renderer.openPage(0)) {
+                Point emptyPos = new Point(0, 0);
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> page.getFormWidgetInfoAtPosition(emptyPos.x, emptyPos.y));
+            }
+        }
     }
 
     // applyEdit - click type widgets
@@ -901,108 +1038,615 @@ public class PdfFormFillingTest {
     // applyEdit edge cases - click type widgets
     @Test
     public void applyEdit_clickOnReadOnlyCheckbox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord clickOnROCheckbox =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 0)
+                        .setClickPoint(new Point(145, 40))
+                        .build();
+
+        verifyApplyEditThrowsException(CLICK_FORM, 0, clickOnROCheckbox);
     }
 
     @Test
     public void applyEdit_clickOnReadOnlyRadioButton() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord clickOnRORadioButton =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setClickPoint(new Point(95, 190))
+                        .build();
+
+        verifyApplyEditThrowsException(CLICK_FORM, 0, clickOnRORadioButton);
     }
 
     @Test
     public void applyEdit_setTextOnClickTypeWidget() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setTextOnCheckbox =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_TEXT,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setText("New text")
+                        .build();
+
+        verifyApplyEditThrowsException(CLICK_FORM, 0, setTextOnCheckbox);
     }
 
     @Test
     public void applyEdit_setChoiceSelectionOnClickTypeWidget() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setChoiceOnCB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setSelectedIndices(Set.of(1, 2, 3))
+                        .build();
+
+        verifyApplyEditThrowsException(CLICK_FORM, 0, setChoiceOnCB);
     }
 
     @Test
     public void applyEdit_clickOnInvalidPoint() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord clickOnNothing =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 0)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+
+        verifyApplyEditThrowsException(CLICK_FORM, 0, clickOnNothing);
     }
 
     // applyEdit edge cases - combobox
     @Test
     public void applyEdit_setChoiceSelectionOnReadOnlyCombobox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setChoiceOnROCB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setSelectedIndices(Set.of(1))
+                        .build();
+
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, setChoiceOnROCB);
     }
 
     @Test
     public void applyEdit_setInvalidChoiceSelectionOnCombobox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setBadChoice =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setSelectedIndices(Set.of(100, 365, 1436))
+                        .build();
+
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, setBadChoice);
     }
 
     @Test
     public void applyEdit_setTextOnReadOnlyCombobox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
+        FormEditRecord setTextOnROCB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_TEXT,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setText("new text")
+                        .build();
 
-    @Test
-    public void applyEdit_setTextOnUneditableCombobox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
-
-    @Test
-    public void applyEdit_clickOnChoiceTypeWidget() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
-
-    // applyEdit edge cases - listbox
-    @Test
-    public void applyEdit_setMultipleChoiceSelectionOnSingleSelectionListbox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
-
-    @Test
-    public void applyEdit_setChoiceSelectionOnReadOnlyListbox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
-
-    @Test
-    public void applyEdit_clickOnListbox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
-    }
-
-    @Test
-    public void applyEdit_setTextOnListbox() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, setTextOnROCB);
     }
 
     // applyEdit edge cases - text field
 
     @Test
+    public void applyEdit_setTextOnUneditableCombobox() throws Exception {
+        FormEditRecord setTextOnUneditableCB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_TEXT,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setText("new text")
+                        .build();
+
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, setTextOnUneditableCB);
+    }
+
+    @Test
+    public void applyEdit_clickOnCombobox() throws Exception {
+        FormEditRecord clickOnCB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(new Point(150, 185))
+                        .build();
+
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, clickOnCB);
+    }
+
+    // applyEdit edge cases - listbox
+    @Test
+    public void applyEdit_setMultipleChoiceSelectionOnSingleSelectionListbox() throws Exception {
+        FormEditRecord pickMultipleOnSingleChoice =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 0)
+                        .setSelectedIndices(Set.of(1, 2))
+                        .build();
+
+        verifyApplyEditThrowsException(LISTBOX_FORM, 0, pickMultipleOnSingleChoice);
+    }
+
+    @Test
+    public void applyEdit_setChoiceSelectionOnReadOnlyListbox() throws Exception {
+        FormEditRecord setChoiceOnROLB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setSelectedIndices(Set.of(1))
+                        .build();
+
+        verifyApplyEditThrowsException(LISTBOX_FORM, 0, setChoiceOnROLB);
+    }
+
+    @Test
+    public void applyEdit_clickOnListbox() throws Exception {
+        FormEditRecord clickOnLB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(new Point(150, 235))
+                        .build();
+
+        verifyApplyEditThrowsException(LISTBOX_FORM, 0, clickOnLB);
+    }
+
+    @Test
+    public void applyEdit_setTextOnListbox() throws Exception {
+        FormEditRecord setTextOnLB =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_TEXT,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setText("new text")
+                        .build();
+
+        verifyApplyEditThrowsException(COMBOBOX_FORM, 0, setTextOnLB);
+    }
+
+    @Test
     public void applyEdit_setTextOnReadOnlyTextField() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setTextOnROTF =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_TEXT,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setText("new text")
+                        .build();
+
+        verifyApplyEditThrowsException(TEXT_FORM, 0, setTextOnROTF);
     }
 
     @Test
     public void applyEdit_clickOnTextField() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord clickOnTF =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(new Point(150, 185))
+                        .build();
+
+        verifyApplyEditThrowsException(TEXT_FORM, 0, clickOnTF);
     }
 
     @Test
     public void applyEdit_setChoiceSelectionOnTextField() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+        FormEditRecord setChoiceOnTF =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_SET_INDICES,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setSelectedIndices(Set.of(1, 2, 3))
+                        .build();
+
+        verifyApplyEditThrowsException(TEXT_FORM, 0, setChoiceOnTF);
     }
 
     @Test
-    public void applyEdit_setTextOverCharLimitOnTextField() throws Exception {
-        // TODO(b/324341490): update impl to throw instead of return empty list
+    public void applyEdits_multipleFormEditRecords_returnsEmptyList() throws IOException {
+        Rect checkboxWidgetArea = new Rect(135, 70, 155, 90);
+        FormWidgetInfo checkboxBefore =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+        Point checkBoxPoint = new Point(145, 80);
+        FormEditRecord checkboxRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(checkBoxPoint)
+                        .build();
+        FormWidgetInfo checkboxAfter =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "true",
+                        /* accessibilityLabel= */ "checkbox");
+
+        Rect radioButtonWidgetArea = new Rect(85, 230, 105, 250);
+        FormWidgetInfo radioButtonBefore =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        Point radioButtonPoint = new Point(95, 240);
+        FormEditRecord radioButtonRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 5)
+                        .setClickPoint(radioButtonPoint)
+                        .build();
+        FormWidgetInfo radioButtonAfter =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "true",
+                        /* accessibilityLabel= */ "");
+
+        List<Point> positions = List.of(new Point[] {checkBoxPoint, radioButtonPoint});
+        List<FormWidgetInfo> beforeWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxBefore, radioButtonBefore});
+        List<FormWidgetInfo> afterWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxAfter, radioButtonAfter});
+        List<FormEditRecord> records =
+                List.of(new FormEditRecord[] {checkboxRecord, radioButtonRecord});
+
+        verifyApplyEdits(CLICK_FORM, 0, positions, beforeWidgetInfos, records, afterWidgetInfos);
+    }
+
+    @Test
+    public void applyEdits_singleInvalidFormEditRecord_returnsRecord() throws IOException {
+        Rect checkboxWidgetArea = new Rect(135, 70, 155, 90);
+        FormWidgetInfo checkboxBefore =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+        Point checkBoxPoint = new Point(145, 80);
+        FormEditRecord checkboxRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(checkBoxPoint)
+                        .build();
+        FormWidgetInfo checkboxAfter =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "true",
+                        /* accessibilityLabel= */ "checkbox");
+
+        Rect radioButtonWidgetArea = new Rect(85, 230, 105, 250);
+        FormWidgetInfo radioButtonBefore =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        Point radioButtonPoint = new Point(95, 240);
+        FormEditRecord radioButtonRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+        FormWidgetInfo radioButtonAfter =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+
+        List<Point> positions = List.of(new Point[] {checkBoxPoint, radioButtonPoint});
+        List<FormWidgetInfo> beforeWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxBefore, radioButtonBefore});
+        List<FormWidgetInfo> afterWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxAfter, radioButtonAfter});
+        List<FormEditRecord> records =
+                List.of(new FormEditRecord[] {checkboxRecord, radioButtonRecord});
+
+        verifyApplyEditsNotNull(
+                CLICK_FORM,
+                0,
+                positions,
+                beforeWidgetInfos,
+                records,
+                afterWidgetInfos,
+                List.of(radioButtonRecord));
+    }
+
+    @Test
+    public void applyEdits_multipleInvalidFormEditRecord_returnsFirstRecord() throws IOException {
+        Rect checkboxWidgetArea = new Rect(135, 70, 155, 90);
+        FormWidgetInfo checkboxBefore =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+        Point checkBoxPoint = new Point(145, 80);
+        FormEditRecord checkboxRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+        FormWidgetInfo checkboxAfter =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+
+        Rect radioButtonWidgetArea = new Rect(85, 230, 105, 250);
+        FormWidgetInfo radioButtonBefore =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        Point radioButtonPoint = new Point(95, 240);
+        FormEditRecord radioButtonRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+        FormWidgetInfo radioButtonAfter =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+
+        List<Point> positions = List.of(new Point[] {checkBoxPoint, radioButtonPoint});
+        List<FormWidgetInfo> beforeWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxBefore, radioButtonBefore});
+        List<FormWidgetInfo> afterWidgetInfos =
+                List.of(new FormWidgetInfo[] {checkboxAfter, radioButtonAfter});
+        List<FormEditRecord> records =
+                List.of(new FormEditRecord[] {checkboxRecord, radioButtonRecord});
+
+        verifyApplyEditsNotNull(
+                CLICK_FORM,
+                0,
+                positions,
+                beforeWidgetInfos,
+                records,
+                afterWidgetInfos,
+                List.of(checkboxRecord, radioButtonRecord));
+    }
+
+    @Test
+    public void applyEdits_documentClosed_throwsIllegalStateException() throws IOException {
+        Rect checkboxWidgetArea = new Rect(135, 70, 155, 90);
+        FormWidgetInfo checkboxBefore =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+        Point checkBoxPoint = new Point(145, 80);
+        FormEditRecord checkboxRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(checkBoxPoint)
+                        .build();
+        FormWidgetInfo checkboxAfter =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "true",
+                        /* accessibilityLabel= */ "checkbox");
+
+        Rect radioButtonWidgetArea = new Rect(85, 230, 105, 250);
+        FormWidgetInfo radioButtonBefore =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        Point radioButtonPoint = new Point(95, 240);
+        FormEditRecord radioButtonRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+        FormWidgetInfo radioButtonAfter =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        List<FormEditRecord> records =
+                List.of(new FormEditRecord[] {checkboxRecord, radioButtonRecord});
+        verifyApplyEditsDocumentClosed(CLICK_FORM, 0, records);
+    }
+
+    @Test
+    public void applyEdits_pageClosed_throwsIllegalStateException() throws IOException {
+        Rect checkboxWidgetArea = new Rect(135, 70, 155, 90);
+        FormWidgetInfo checkboxBefore =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "checkbox");
+        Point checkBoxPoint = new Point(145, 80);
+        FormEditRecord checkboxRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 1)
+                        .setClickPoint(checkBoxPoint)
+                        .build();
+        FormWidgetInfo checkboxAfter =
+                makeCheckbox(
+                        /* widgetIndex= */ 1,
+                        /* widgetRect= */ checkboxWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "true",
+                        /* accessibilityLabel= */ "checkbox");
+
+        Rect radioButtonWidgetArea = new Rect(85, 230, 105, 250);
+        FormWidgetInfo radioButtonBefore =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        Point radioButtonPoint = new Point(95, 240);
+        FormEditRecord radioButtonRecord =
+                new FormEditRecord.Builder(
+                                FormEditRecord.EDIT_TYPE_CLICK,
+                                /* pageNumber= */ 0,
+                                /* widgetIndex= */ 2)
+                        .setClickPoint(new Point(0, 0))
+                        .build();
+        FormWidgetInfo radioButtonAfter =
+                makeRadioButton(
+                        /* widgetIndex= */ 5,
+                        /* widgetRect= */ radioButtonWidgetArea,
+                        /* readOnly= */ false,
+                        /* textValue= */ "false",
+                        /* accessibilityLabel= */ "");
+        List<FormEditRecord> records =
+                List.of(new FormEditRecord[] {checkboxRecord, radioButtonRecord});
+        verifyApplyEditsPageClosed(CLICK_FORM, 0, records);
+    }
+
+    private void verifyApplyEdits(
+            @RawRes int docRes,
+            int pageNum,
+            List<Point> positions,
+            List<FormWidgetInfo> expectedInfosBefore,
+            List<FormEditRecord> editRecords,
+            List<FormWidgetInfo> expectedInfosAfter)
+            throws IOException {
+        try (PdfRenderer renderer = createRenderer(docRes, mContext)) {
+            try (PdfRenderer.Page page = renderer.openPage(pageNum)) {
+                for (int i = 0; i < positions.size(); i++) {
+                    FormWidgetInfo beforeInfo =
+                            page.getFormWidgetInfoAtPosition(
+                                    positions.get(i).x, positions.get(i).y);
+                    assertEquals(expectedInfosBefore.get(i), beforeInfo);
+                }
+
+                List<FormEditRecord> result = page.applyEdits(editRecords);
+                assertEquals(0, result.size());
+
+                for (int i = 0; i < positions.size(); i++) {
+                    FormWidgetInfo afterInfo =
+                            page.getFormWidgetInfoAtPosition(
+                                    positions.get(i).x, positions.get(i).y);
+                    assertEquals(expectedInfosAfter.get(i), afterInfo);
+                }
+            }
+        }
+    }
+
+    private void verifyApplyEditsNotNull(
+            @RawRes int docRes,
+            int pageNum,
+            List<Point> positions,
+            List<FormWidgetInfo> expectedInfosBefore,
+            List<FormEditRecord> editRecords,
+            List<FormWidgetInfo> expectedInfosAfter,
+            List<FormEditRecord> invalidRecords)
+            throws IOException {
+        try (PdfRenderer renderer = createRenderer(docRes, mContext)) {
+            try (PdfRenderer.Page page = renderer.openPage(pageNum)) {
+                for (int i = 0; i < positions.size(); i++) {
+                    FormWidgetInfo beforeInfo =
+                            page.getFormWidgetInfoAtPosition(
+                                    positions.get(i).x, positions.get(i).y);
+                    assertEquals(expectedInfosBefore.get(i), beforeInfo);
+                }
+
+                List<FormEditRecord> result = page.applyEdits(editRecords);
+                assertEquals(invalidRecords, result);
+
+                for (int i = 0; i < positions.size(); i++) {
+                    FormWidgetInfo afterInfo =
+                            page.getFormWidgetInfoAtPosition(
+                                    positions.get(i).x, positions.get(i).y);
+                    assertEquals(expectedInfosAfter.get(i), afterInfo);
+                }
+            }
+        }
+    }
+
+    private void verifyApplyEditsDocumentClosed(
+            @RawRes int docRes, int pageNum, List<FormEditRecord> editRecords) throws IOException {
+        PdfRenderer renderer = createRenderer(docRes, mContext);
+        PdfRenderer.Page page = renderer.openPage(pageNum);
+        page.close();
+        renderer.close();
+        assertThrows(IllegalStateException.class, () -> page.applyEdits(editRecords));
+    }
+
+    private void verifyApplyEditsPageClosed(
+            @RawRes int docRes, int pageNum, List<FormEditRecord> editRecords) throws IOException {
+        try (PdfRenderer renderer = createRenderer(docRes, mContext)) {
+            PdfRenderer.Page page = renderer.openPage(pageNum);
+            page.close();
+            assertThrows(IllegalStateException.class, () -> page.applyEdits(editRecords));
+        }
     }
 
     private void verifyFormType(@RawRes int docRes, int expectedFormType) throws Exception {
-        verifyFormTypePreV(docRes, expectedFormType);
         verifyFormTypeVPlus(docRes, expectedFormType);
-    }
-
-    private void verifyFormTypePreV(@RawRes int docRes, int expectedFormType) throws Exception {
-        try (PdfRendererPreV renderer = createPreVRenderer(docRes, mContext, null)) {
-            int formType = renderer.getPdfFormType();
-            assertEquals(expectedFormType, formType);
-        }
     }
 
     private void verifyFormTypeVPlus(@RawRes int docRes, int expectedFormType) throws Exception {
@@ -1015,23 +1659,7 @@ public class PdfFormFillingTest {
     private void verifyFormWidgetInfo(
             @RawRes int docRes, int pageNum, Point position, FormWidgetInfo expectedInfo)
             throws Exception {
-        verifyFormWidgetInfoPreV(docRes, pageNum, position, expectedInfo);
         verifyFormWidgetInfoVPlus(docRes, pageNum, position, expectedInfo);
-    }
-
-    private void verifyFormWidgetInfoPreV(
-            @RawRes int docRes, int pageNum, Point position, FormWidgetInfo expectedInfo)
-            throws Exception {
-        try (PdfRendererPreV renderer = createPreVRenderer(docRes, mContext, null)) {
-            try (PdfRendererPreV.Page page = renderer.openPage(pageNum)) {
-                // Verify position API
-                FormWidgetInfo foundInfo = page.getFormWidgetInfoAtPosition(position.x, position.y);
-
-                assertEquals(expectedInfo, foundInfo);
-                // Verify index API
-                assertEquals(foundInfo, page.getFormWidgetInfoAtIndex(foundInfo.getWidgetIndex()));
-            }
-        }
     }
 
     private void verifyFormWidgetInfoVPlus(
@@ -1055,27 +1683,7 @@ public class PdfFormFillingTest {
             Set<Integer> widgetTypes,
             List<FormWidgetInfo> expectedInfos)
             throws Exception {
-        verifyFormWidgetInfosPreV(docRes, pageNum, widgetTypes, expectedInfos);
         verifyFormWidgetInfosVPlus(docRes, pageNum, widgetTypes, expectedInfos);
-    }
-
-    private void verifyFormWidgetInfosPreV(
-            @RawRes int docRes,
-            int pageNum,
-            Set<Integer> widgetTypes,
-            List<FormWidgetInfo> expectedInfos)
-            throws Exception {
-        try (PdfRendererPreV renderer = createPreVRenderer(docRes, mContext, null)) {
-            try (PdfRendererPreV.Page page = renderer.openPage(pageNum)) {
-                List<FormWidgetInfo> foundInfos = page.getFormWidgetInfos(widgetTypes);
-
-                assertEquals(expectedInfos.size(), foundInfos.size());
-                for (int i = 0; i < foundInfos.size(); i++) {
-                    FormWidgetInfo expectedInfo = expectedInfos.get(i);
-                    assertEquals(expectedInfo, foundInfos.get(i));
-                }
-            }
-        }
     }
 
     private void verifyFormWidgetInfosVPlus(
@@ -1106,14 +1714,6 @@ public class PdfFormFillingTest {
             FormWidgetInfo expectedInfoAfter,
             List<Rect> expectedInvalidRects)
             throws Exception {
-        verifyApplyEditPreV(
-                docRes,
-                pageNum,
-                position,
-                expectedInfoBefore,
-                editRecord,
-                expectedInfoAfter,
-                expectedInvalidRects);
         verifyApplyEditVPlus(
                 docRes,
                 pageNum,
@@ -1122,35 +1722,6 @@ public class PdfFormFillingTest {
                 editRecord,
                 expectedInfoAfter,
                 expectedInvalidRects);
-    }
-
-    private void verifyApplyEditPreV(
-            @RawRes int docRes,
-            int pageNum,
-            Point position,
-            FormWidgetInfo expectedInfoBefore,
-            FormEditRecord editRecord,
-            FormWidgetInfo expectedInfoAfter,
-            List<Rect> expectedInvalidRects)
-            throws Exception {
-        try (PdfRendererPreV renderer = createPreVRenderer(docRes, mContext, null)) {
-            try (PdfRendererPreV.Page page = renderer.openPage(pageNum)) {
-                FormWidgetInfo beforeInfo =
-                        page.getFormWidgetInfoAtPosition(position.x, position.y);
-                assertEquals(expectedInfoBefore, beforeInfo);
-
-                List<Rect> invalidatedRects = page.applyEdit(editRecord);
-
-                FormWidgetInfo afterInfo = page.getFormWidgetInfoAtPosition(position.x, position.y);
-                assertEquals(expectedInfoAfter, afterInfo);
-                // A compatible implementation of this API may invalidate a larger area than we
-                // expect, but it cannot invalidate a smaller area than we expect.
-                assertTrue(
-                        fullyContain(
-                                /* innerRects= */ expectedInvalidRects,
-                                /* outerRects= */ invalidatedRects));
-            }
-        }
     }
 
     private void verifyApplyEditVPlus(
@@ -1182,126 +1753,17 @@ public class PdfFormFillingTest {
         }
     }
 
-    /**
-     * Returns {@code true} if every {@code innerRect} is contained by at least one {@code
-     * outerRect}
-     */
-    private static boolean fullyContain(List<Rect> innerRects, List<Rect> outerRects) {
-        outerLoop:
-        for (Rect inner : innerRects) {
-            for (Rect outer : outerRects) {
-                if (outer.contains(inner)) {
-                    continue outerLoop;
-                }
+    private void verifyApplyEditThrowsException(
+            @RawRes int docRes, int pageNum, FormEditRecord editRecord) throws Exception {
+        verifyApplyEditThrowsExceptionVPlus(docRes, pageNum, editRecord);
+    }
+
+    private void verifyApplyEditThrowsExceptionVPlus(
+            @RawRes int docRes, int pageNum, FormEditRecord editRecord) throws Exception {
+        try (PdfRenderer renderer = createRenderer(docRes, mContext)) {
+            try (PdfRenderer.Page page = renderer.openPage(pageNum)) {
+                assertThrows(IllegalArgumentException.class, () -> page.applyEdit(editRecord));
             }
-            return false;
         }
-        return true;
-    }
-
-    private static FormWidgetInfo makeCheckbox(
-            int widgetIndex,
-            Rect widgetRect,
-            boolean readOnly,
-            String textValue,
-            String accessibilityLabel) {
-        return new FormWidgetInfo.Builder(
-                        FormWidgetInfo.WIDGET_TYPE_CHECKBOX,
-                        widgetIndex,
-                        widgetRect,
-                        textValue,
-                        accessibilityLabel)
-                .setReadOnly(readOnly)
-                .build();
-    }
-
-    private static FormWidgetInfo makeRadioButton(
-            int widgetIndex,
-            Rect widgetRect,
-            boolean readOnly,
-            String textValue,
-            String accessibilityLabel) {
-        return new FormWidgetInfo.Builder(
-                        FormWidgetInfo.WIDGET_TYPE_RADIOBUTTON,
-                        widgetIndex,
-                        widgetRect,
-                        textValue,
-                        accessibilityLabel)
-                .setReadOnly(readOnly)
-                .build();
-    }
-
-    private static FormWidgetInfo makeCombobox(
-            int widgetIndex,
-            Rect widgetRect,
-            boolean readOnly,
-            String textValue,
-            String accessibilityLabel,
-            boolean editableText,
-            float fontSize,
-            List<ChoiceOption> choiceOptions) {
-        FormWidgetInfo.Builder builder =
-                new FormWidgetInfo.Builder(
-                                FormWidgetInfo.WIDGET_TYPE_COMBOBOX,
-                                widgetIndex,
-                                widgetRect,
-                                textValue,
-                                accessibilityLabel)
-                        .setReadOnly(readOnly)
-                        .setEditableText(editableText)
-                        .setChoiceOptions(choiceOptions);
-        if (fontSize > 0) {
-            builder.setFontSize(fontSize);
-        }
-        return builder.build();
-    }
-
-    private static FormWidgetInfo makeListbox(
-            int widgetIndex,
-            Rect widgetRect,
-            boolean readOnly,
-            String textValue,
-            String accessibilityLabel,
-            boolean multiSelect,
-            List<ChoiceOption> choiceOptions) {
-        return new FormWidgetInfo.Builder(
-                        FormWidgetInfo.WIDGET_TYPE_LISTBOX,
-                        widgetIndex,
-                        widgetRect,
-                        textValue,
-                        accessibilityLabel)
-                .setReadOnly(readOnly)
-                .setMultiSelect(multiSelect)
-                .setChoiceOptions(choiceOptions)
-                .build();
-    }
-
-    private static FormWidgetInfo makeTextField(
-            int widgetIndex,
-            Rect widgetRect,
-            boolean readOnly,
-            String textValue,
-            String accessibilityLabel,
-            boolean editableText,
-            boolean multiLineText,
-            int maxLength,
-            float fontSize) {
-        FormWidgetInfo.Builder builder =
-                new FormWidgetInfo.Builder(
-                                FormWidgetInfo.WIDGET_TYPE_TEXTFIELD,
-                                widgetIndex,
-                                widgetRect,
-                                textValue,
-                                accessibilityLabel)
-                        .setReadOnly(readOnly)
-                        .setEditableText(editableText)
-                        .setMultiLineText(multiLineText);
-        if (fontSize > 0) {
-            builder.setFontSize(fontSize);
-        }
-        if (maxLength > 0) {
-            builder.setMaxLength(maxLength);
-        }
-        return builder.build();
     }
 }
