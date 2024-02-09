@@ -34,11 +34,17 @@ android_test {
         "android.security.flags-aconfig-java",
         "flag-junit",
     ],
-    srcs: ["src/**/*.java"],
+    srcs: [
+        "src/**/*.java",
+        "test-apps/TestComponentCallerApp/**/Constants.java",
+    ],
     // Tag this module as a cts test artifact
     test_suites: [
         "cts",
         "general-tests",
     ],
-    data: [":CtsTestShareIdentityApp"],
+    data: [
+        ":CtsTestShareIdentityApp",
+        ":CtsTestComponentCallerApp",
+    ],
 }
