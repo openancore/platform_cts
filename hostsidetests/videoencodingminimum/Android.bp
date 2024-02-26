@@ -20,6 +20,9 @@ java_test_host {
     name: "CtsVideoQualityFloorHostTestCases",
     defaults: ["cts_defaults"],
     srcs: ["src/**/*.java"],
+    static_libs: [
+        "cts-host-utils",
+    ],
     libs: [
         "cts-tradefed",
         "cts-shim-host-lib",
@@ -31,5 +34,8 @@ java_test_host {
         // "cts",
         "cts-shim-host-lib",
         "tradefed",
+    ],
+    data: [
+        ":VideoEncodingMinApp",
     ],
 }
