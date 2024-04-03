@@ -22,20 +22,17 @@ import android.util.Log;
 
 import com.android.cts.nfc.multidevice.emulator.service.PaymentService1;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class SinglePaymentEmulatorActivity extends BaseEmulatorActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mEnableComponents = new ArrayList<>(List.of(PaymentService1.COMPONENT));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
+        setupServices(PaymentService1.COMPONENT);
         makeDefaultWalletRoleHolder();
     }
 
