@@ -26,8 +26,7 @@ import com.google.auto.value.AutoAnnotation
  * You can use `DeviceState` to ensure that the device enters
  * the correct state for the method.
  */
-// This can only be applied directly to tests to make it clear to test authors
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 @UsesAnnotationExecutor(weakValue = "com.android.xts.root.RootAnnotationExecutor")
 annotation class RequireAdbRoot(
