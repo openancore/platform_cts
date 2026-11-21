@@ -1,0 +1,12 @@
+Blobs of 100 MiB or larger were removed from this history so GitHub
+can store android-15.0.0_r36. They are test data, sample media,
+generated dumps, wrapper archives, or pngs, not the project source.
+The release commit id differs from AOSP where history was rewritten.
+
+Project: platform/cts
+
+Removed from the release tree:
+- tests/MediaProviderTranscode/res/raw/testVideo_HEVC_long.mp4 (239.2 MiB)
+
+Removed from older history only. Not present on android-15.0.0_r36:
+- hostsidetests/largeapk/app/res/raw/zerofile.png (200.0 MiB)
